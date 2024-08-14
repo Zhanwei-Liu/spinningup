@@ -10,7 +10,7 @@ jobs:
           python-version: '3.6'
       - name: Install dependencies
         run: |
-          pip install wheel==0.38.4 setuptools==66.0.0
+          # pip install wheel==0.38.4 setuptools==66.0.0
           pip install -r ./docs/docs_requirements.txt
       - name: Sphinx build
         run: |
