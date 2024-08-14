@@ -22,32 +22,35 @@
 最简单的策略梯度求导
 =====================================
 
-我们考虑一种基于随机参数的策略： :math:`\pi_{\theta}` 。我们的目的是最小化期望回报 :math:`J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{R(\tau)}` 。为了计算导数，我们假定 :math:`R(\tau)` 属于 `无衰减回报`，但是对于衰减回报来说基本上是一样的。
+我们考虑一种基于随机策略： :math:`\pi_{\theta}` 。我们的目的是最小化期望回报 :math:`J(\pi_{\theta}) = \mathop{\mathbb{E}}\limits_{\tau \sim \pi_{\theta}}[R(\tau)]` 。为了计算导数，我们假定 :math:`R(\tau)` 是 `有限时域无衰减回报`，但是对于无限时域衰减回报来说也是一样的。
 
 
-.. _`无衰减回报`: ../spinningup/rl_intro.html#reward-and-return
+.. _`有限时域无衰减回报`: ../spinningup/rl_intro.html#reward-and-return
 
-We would like to optimize the policy by gradient ascent, eg
 我们想要通过梯度下降来优化策略，例如
 
 .. math::
 
     \theta_{k+1} = \theta_k + \alpha \left. \nabla_{\theta} J(\pi_{\theta}) \right|_{\theta_k}.
 
-策略性能的梯度 :math:`\nabla_{\theta} J(\pi_{\theta})` ，通常被称为 **策略梯度** ，优化策略的算法通常被称为 **策略算法** 。（比如说 Vanilla Policy Gradient 和 TRPO。PPO 也被称为策略梯度算法，尽管这样不是很准确。）
+策略性能的梯度 :math:`\nabla_{\theta} J(\pi_{\theta})` ，通常被称为 **策略梯度** (policy gradient) ，以这种方式优化策略的算法被称为 **策略梯度算法** (policy gradient algorithms)。（比如说 Vanilla Policy Gradient 和 TRPO。PPO 也被称为策略梯度算法，尽管这样说不是很准确。）
 
-To actually use this algorithm, we need an expression for the policy gradient which we can numerically compute. This involves two steps: 1) deriving the analytical gradient of policy performance, which turns out to have the form of an expected value, and then 2) forming a sample estimate of that expected value, which can be computed with data from a finite number of agent-environment interaction steps. 
+为了在实际中使用这个算法, 我们需要能够在数值计算中使用的表达式. 这涉及到两个步骤: 1) 推导策略性能的梯度的解析式, 它的形式是一个期望值 2) 计算期望值的样本估计，可以用有限数量的代理和环境交互的数据来计算。
 
 
-In this subsection, we'll find the simplest form of that expression. In later subsections, we'll show how to improve on the simplest form to get the version we actually use in standard policy gradient implementations.
+在这个小节中，我们介绍这个表达式最简单的形式. 这之后的小节中, 我们将展示如何改进最简单的形式，以获得我们在标准策略梯度算法实现中实际使用的版本。
 
-We'll begin by laying out a few facts which are useful for deriving the analytical gradient.
+我们首先列出一些对推导解析梯度有用的等式。
 
-**1. Probability of a Trajectory.** The probability of a trajectory :math:`\tau = (s_0, a_0, ..., s_{T+1})` given that actions come from :math:`\pi_{\theta}` is
+**1. 轨迹的概率（Probability of a Trajectory）。** 行为（actions）来自于已知参数 :math:`\theta` 的随机策略 :math:`\pi_{\theta}` 的一个轨迹（trajectory等价于episode或rollout） :math:`\tau = (s_0, a_0, ..., s_{T+1})` 发生的概率是:
 
 .. math::
 
-    P(\tau|\theta) = \rho_0 (s_0) \prod_{t=0}^{T} P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t |s_t).
+    P(\tau|\theta) = P_0 (s_0) \prod_{t=0}^{T} P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t |s_t).
+
+:math:`s_0 ~ P_0 (s)` 是初始状态分布； :math:`s_{t+1} ~ P(s_{t+1}|s_t,a_t)` 是状态转移概率； :math:`\pi_{\theta}(a_t |s_t)` 是随机策略。
+
+
 
 
 **2. The Log-Derivative Trick.** The log-derivative trick is based on a simple rule from calculus: the derivative of :math:`\log x` with respect to :math:`x` is :math:`1/x`. When rearranged and combined with chain rule, we get:
