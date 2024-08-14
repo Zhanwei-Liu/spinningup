@@ -57,7 +57,7 @@ source_parsers = {
 mathjax_path = "es5/tex-chtml.js"
 sys.path.append(os.path.abspath("_extensions"))
 extensions = ['sphinx.ext.imgmath',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon']
