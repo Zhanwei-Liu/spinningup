@@ -7,10 +7,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.11.0'
+          python-version: '3.6.0'
       - name: Install dependencies
         run: |
-          pip install wheel==0.38.4 setuptools==66.0.0
+          # pip install wheel==0.38.4 setuptools==66.0.0
           pip install -r ./docs/docs_requirements.txt
       - name: Sphinx build
         run: |
