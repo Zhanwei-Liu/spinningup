@@ -2,12 +2,12 @@ name: Docs
 on: [push, pull_request, workflow_dispatch]
 jobs:
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.6'
       - name: Install dependencies
         run: |
           pip install wheel==0.38.4 setuptools==66.0.0
