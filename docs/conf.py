@@ -73,14 +73,7 @@ html_context = {
     "github_version": "master",  # Version
     "conf_py_path": "/docs/",  # Path in the checkout to the docs root
     "spinningup_inject_language_links": True,
-    "spinningup_docs_supported_languages": list(supported_languages.keys()),
     "spinningup_docs_basepath": "https://zhanwei-liu.github.io/spinningup/",
-    "spinningup_docs_suffix": ".html",
-    "spinningup_default_lang": "en",
-    "spinningup_canonical_version": "stable",
-    # Distinguish local development website from production website.
-    # This prevents people from looking for changes on the production website after making local changes :)
-    "spinningup_title_prefix": "" if on_rtd else "(DEV) ",
 }
 
 # imgmath settings
