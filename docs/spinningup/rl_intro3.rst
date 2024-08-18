@@ -8,26 +8,26 @@
 
 在这个部分，我们会讨论策略优化算法的数学基础，同时提供样例代码。我们会包括策略优化的以下三个部分
 
-* 最简单的等式 描述了策略表现对于策略参数的梯度
-* 一个让我们可以 舍弃无用项 的公式
-* 一个让我们可以 添加有用参数 的公式
+* **最简单的等式**描述策略性能对于策略参数的梯度，
+* 一个让我们可以**舍弃无用项**的公式，
+* 一个让我们可以**添加有用参数**的公式。
 
-最后，我们会把结果放在一起，然后描述策略梯度更有优势的版本： 我们在 `Vanilla Policy Gradient`_ 中使用的版本。
+最后，我们会把结果放在一起，然后描述基于优势函数的策略梯度的表达式： 我们在 `Vanilla Policy Gradient`_ 的实现中使用的版本。
 
-.. _`the simplest equation`: ../spinningup/rl_intro3.html#deriving-the-simplest-policy-gradient
-.. _`drop useless terms`: ../spinningup/rl_intro3.html#don-t-let-the-past-distract-you
-.. _`add useful terms`: ../spinningup/rl_intro3.html#baselines-in-policy-gradients
+.. _`最简单的等式`: ../spinningup/rl_intro3.html#deriving-the-simplest-policy-gradient
+.. _`舍弃无用项`: ../spinningup/rl_intro3.html#don-t-let-the-past-distract-you
+.. _`增加有用项`: ../spinningup/rl_intro3.html#baselines-in-policy-gradients
 .. _`Vanilla Policy Gradient`: ../algorithms/vpg.html
 
-最简单的策略梯度求导
-=====================================
+推导最简单的策略梯度（Deriving the Simplest Policy Gradient）
+=========================================================
 
-我们考虑一种基于随机策略： :math:`\pi_{\theta}` 。我们的目的是最小化期望回报 :math:`J(\pi_{\theta}) = \mathop{\mathbb{E}}\limits_{\tau \sim \pi_{\theta}}[R(\tau)]` 。为了计算导数，我们假定 :math:`R(\tau)` 是 `有限时域无衰减回报`，但是对于无限时域衰减回报来说也是一样的。
+我们考虑一种基于随机参数化的策略： :math:`\pi_{\theta}` 。我们的目的是最大化期望回报 :math:`J(\pi_{\theta}) = \mathop{\mathbb{E}}\limits_{\tau \sim \pi_{\theta}}[R(\tau)]` 。为了公式推导，我们假定 :math:`R(\tau)` 是 `有限时域无折扣回报`，但是对于无限时域折扣回报来说也是一样的。
 
 
-.. _`有限时域无衰减回报`: ../spinningup/rl_intro.html#reward-and-return
+.. _`有限时域无折扣回报`: ../spinningup/rl_intro.html#reward-and-return
 
-我们想要通过梯度下降来优化策略，例如
+我们想要通过梯度下降（gradient ascent）来优化策略，例如
 
 .. math::
 
@@ -35,41 +35,39 @@
 
 策略性能的梯度 :math:`\nabla_{\theta} J(\pi_{\theta})` ，通常被称为 **策略梯度** (policy gradient) ，以这种方式优化策略的算法被称为 **策略梯度算法** (policy gradient algorithms)。（比如说 Vanilla Policy Gradient 和 TRPO。PPO 也被称为策略梯度算法，尽管这样说不是很准确。）
 
-为了在实际中使用这个算法, 我们需要能够在数值计算中使用的表达式. 这涉及到两个步骤: 1) 推导策略性能的梯度的解析式, 它的形式是一个期望值 2) 计算期望值的样本估计，可以用有限数量的代理和环境交互的数据来计算。
+为了在实际中使用这个算法, 我们需要能够在数值计算中使用的表达式. 这涉及到两个步骤: 1) 推导策略性能的梯度的解析式, 它的形式是一个期望值 2) 计算期望值的样本估计，可以用有限数量的智能体和环境交互的数据来计算。
 
 
 在这个小节中，我们介绍这个表达式最简单的形式. 这之后的小节中, 我们将展示如何改进最简单的形式，以获得我们在标准策略梯度算法实现中实际使用的版本。
 
-我们首先列出一些对推导解析梯度有用的等式。
+我们首先列出一些对推导梯度解析式有用的等式。
 
-**1. 轨迹的概率（Probability of a Trajectory）。** 行为（actions）来自于已知参数 :math:`\theta` 的随机策略 :math:`\pi_{\theta}` 的一个轨迹（trajectory等价于episode或rollout） :math:`\tau = (s_0, a_0, ..., s_{T+1})` 发生的概率是:
+**1. 轨迹的概率（Probability of a Trajectory）。** 已知动作（actions）来自于随机策略 :math:`\pi_{\theta}` 的一个轨迹（trajectory等价于episode或rollout） :math:`\tau = (s_0, a_0, ..., s_{T+1})` 发生的概率是:
 
 .. math::
 
-    P(\tau|\theta) = P_0 (s_0) \prod_{t=0}^{T} P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t |s_t).
+    P(\tau|\theta) = \rho_0 (s_0) \prod_{t=0}^{T} P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t |s_t).
 
-:math:`s_0 ~ P_0 (s)` 是初始状态分布； :math:`s_{t+1} ~ P(s_{t+1}|s_t,a_t)` 是状态转移概率； :math:`\pi_{\theta}(a_t |s_t)` 是随机策略。
-
-
+:math:`s_0 ~ \rho_0 (s)` 是初始状态分布； :math:`s_{t+1} ~ P(s_{t+1}|s_t,a_t)` 是状态转移概率； :math:`\pi_{\theta}(a_t |s_t)` 是随机策略。
 
 
-**2. The Log-Derivative Trick.** The log-derivative trick is based on a simple rule from calculus: the derivative of :math:`\log x` with respect to :math:`x` is :math:`1/x`. When rearranged and combined with chain rule, we get:
+**2. 对数求导技巧(The Log-Derivative Trick).** 对数求导的技巧是基于微积分中的简单求导法则: :math:`\log x` 对 :math:`x` 求导的结果是 :math:`1/x` 。当重新排列并结合链式法则时，我们得到:
 
 .. math::
 
     \nabla_{\theta} P(\tau | \theta) = P(\tau | \theta) \nabla_{\theta} \log P(\tau | \theta).
 
 
-**3. Log-Probability of a Trajectory.** The log-prob of a trajectory is just
+**3. 轨迹发生概率的对数（Log-Probability of a Trajectory）.** 一个轨迹发生概率的对数为
 
 .. math::
 
     \log P(\tau|\theta) = \log \rho_0 (s_0) + \sum_{t=0}^{T} \bigg( \log P(s_{t+1}|s_t, a_t)  + \log \pi_{\theta}(a_t |s_t)\bigg).
 
 
-**4. Gradients of Environment Functions.** The environment has no dependence on :math:`\theta`, so gradients of :math:`\rho_0(s_0)`, :math:`P(s_{t+1}|s_t, a_t)`, and :math:`R(\tau)` are zero.
+**4. 环境函数的梯度（Gradients of Environment Functions）.** 环境和 :math:`\theta` 无关,  :math:`\rho_0(s_0)`, :math:`P(s_{t+1}|s_t, a_t)`, 和 :math:`R(\tau)` 对 :math:`\theta` 的梯度为0.
 
-**5. Grad-Log-Prob of a Trajectory.** The gradient of the log-prob of a trajectory is thus
+**5. 轨迹发生概率的对数的梯度（Grad-Log-Prob of a Trajectory）.** 轨迹发生概率的对数的梯度可以表示为：
 
 .. math::
 
@@ -77,196 +75,223 @@
     &= \sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t).
 
 
-Putting it all together, we derive the following:
+把上面五个规则代入到一起我们可以推导出:
 
-.. admonition:: Derivation for Basic Policy Gradient
+.. admonition:: 基本的策略梯度的推导
 
     .. math::
         :nowrap:
 
         \begin{align*}
         \nabla_{\theta} J(\pi_{\theta}) &= \nabla_{\theta} \underE{\tau \sim \pi_{\theta}}{R(\tau)} & \\
-        &= \nabla_{\theta} \int_{\tau} P(\tau|\theta) R(\tau) & \text{Expand expectation} \\
-        &= \int_{\tau} \nabla_{\theta} P(\tau|\theta) R(\tau) & \text{Bring gradient under integral} \\
-        &= \int_{\tau} P(\tau|\theta) \nabla_{\theta} \log P(\tau|\theta) R(\tau) & \text{Log-derivative trick} \\
-        &= \underE{\tau \sim \pi_{\theta}}{\nabla_{\theta} \log P(\tau|\theta) R(\tau)} & \text{Return to expectation form} \\
-        \therefore \nabla_{\theta} J(\pi_{\theta}) &= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau)} & \text{Expression for grad-log-prob}
+        &= \nabla_{\theta} \int_{\tau} P(\tau|\theta) R(\tau) & \text{展开期望} \\
+        &= \int_{\tau} \nabla_{\theta} P(\tau|\theta) R(\tau) & \text{把梯度算子代入到积分中} \\
+        &= \int_{\tau} P(\tau|\theta) \nabla_{\theta} \log P(\tau|\theta) R(\tau) & \text{对数求导技巧(The Log-Derivative Trick)} \\
+        &= \underE{\tau \sim \pi_{\theta}}{\nabla_{\theta} \log P(\tau|\theta) R(\tau)} & \text{再转化为一个期望的形式} \\
+        \therefore \nabla_{\theta} J(\pi_{\theta}) &= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau)} & \text{轨迹概率对数梯度的表达式}
         \end{align*}
 
-This is an expectation, which means that we can estimate it with a sample mean. If we collect a set of trajectories :math:`\mathcal{D} = \{\tau_i\}_{i=1,...,N}` where each trajectory is obtained by letting the agent act in the environment using the policy :math:`\pi_{\theta}`, the policy gradient can be estimated with
+这是一个期望，我们可以使用样本均值去估计它. 如果我们收集了一个轨迹集合 :math:`\mathcal{D} = \{\tau_i\}_{i=1,...,N}` 式子中的轨迹是通过让智能体在环境中使用策略 :math:`\pi_{\theta}` 生成动作来指导运行获得的, 策略梯度则能够使用下式估计：
 
 .. math::
 
     \hat{g} = \frac{1}{|\mathcal{D}|} \sum_{\tau \in \mathcal{D}} \sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau),
 
-where :math:`|\mathcal{D}|` is the number of trajectories in :math:`\mathcal{D}` (here, :math:`N`).
+式中 :math:`|\mathcal{D}|` 集合 :math:`\mathcal{D}` 中轨迹的数量(这里定义为, :math:`N`).
 
-This last expression is the simplest version of the computable expression we desired. Assuming that we have represented our policy in a way which allows us to calculate :math:`\nabla_{\theta} \log \pi_{\theta}(a|s)`, and if we are able to run the policy in the environment to collect the trajectory dataset, we can compute the policy gradient and take an update step.
+最后一个表达式是我们想要的可以进行计算的最简单版本。 假设我们已经用一种可以计算 :math:`\nabla_{\theta} \log \pi_{\theta}(a|s)` 的方式来表示我们的策略且我们能够运行在环境中运行策略去收集轨迹中的数据集, 那么我们就可以计算策略梯度并执行更新步骤.
 
-Implementing the Simplest Policy Gradient
-=========================================
+实现最简单的策略梯度（Implementing the Simplest Policy Gradient）
+==============================================================
 
-We give a short Tensorflow implementation of this simple version of the policy gradient algorithm in ``spinup/examples/pg_math/1_simple_pg.py``. (It can also be viewed `on github <https://github.com/openai/spinningup/blob/master/spinup/examples/pg_math/1_simple_pg.py>`_.) It is only 122 lines long, so we highly recommend reading through it in depth. While we won't go through the entirety of the code here, we'll highlight and explain a few important pieces.
+在 ``spinup/examples/pytorch/pg_math/1_simple_pg.py`` 中我们给出了这个简单版本的策略梯度算法的简短PyTorch实现。 (它也能在 `github <https://github.com/openai/spinningup/blob/master/spinup/examples/pytorch/pg_math/1_simple_pg.py>`_ 查看。) 它只有128行，所以我们强烈建议深入阅读。虽然我们不会在这里讨论全部代码，但我们将重点介绍和解释一些重要的部分。
 
-**1. Making the Policy Network.** 
+.. admonition:: 你应该知道
+
+    这部分先前写了一个Tensorflow的例子，老的Tensorflow部分能够在 `这里 <https://spinningup.openai.com/en/latest/spinningup/extra_tf_pg_implementation.html#implementing-the-simplest-policy-gradient>`_ 查看。
+
+
+**1. 创建一个策略网络。** 
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 25
+    :lineno-start: 30
 
-    # make core of policy network
-    obs_ph = tf.placeholder(shape=(None, obs_dim), dtype=tf.float32)
-    logits = mlp(obs_ph, sizes=hidden_sizes+[n_acts])
+    # 创建策略网络的核心
+    logits_net = mlp(sizes=[obs_dim]+hidden_sizes+[n_acts])
 
-    # make action selection op (outputs int actions, sampled from policy)
-    actions = tf.squeeze(tf.multinomial(logits=logits,num_samples=1), axis=1)
+    # 创建一个函数去计算动作分布
+    def get_policy(obs):
+        logits = logits_net(obs)
+        return Categorical(logits=logits)
 
-This block builds a feedforward neural network categorical policy. (See the `Stochastic Policies`_ section in Part 1 for a refresher.) The ``logits`` tensor can be used to construct log-probabilities and probabilities for actions, and the ``actions`` tensor samples actions based on the probabilities implied by ``logits``.
+    # 创建通过选择的函数（输出是一个从策略中采样的动作）
+    def get_action(obs):
+        return get_policy(obs).sample().item()
+
+本模块构建了使用前馈神经网络分类策略的模块和函数。 (查看第一部分的 `Stochastic Policies`_ 章节进行回顾。)  ``logits_net`` 模块的输出可以被用来构建概率的对数和动作的概率, ``get_action`` 函数基于 ``logits`` 计算的概率对动作进行采样。
+（注意： ``get_action`` 函数假设仅有一个 ``obs`` 被提供，因此仅有一个整数的动作输出，这就是为什么使用了 ``.item()`` ,使用这个能够 `从张量中提取一个元素 <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.item>`_ 。）
 
 .. _`Stochastic Policies`: ../spinningup/rl_intro.html#stochastic-policies
 
-**2. Making the Loss Function.**
+在这个例子中，大量的工作都被35行的 ``Categorical`` 对象完成了。这是一个PyTorch版本的 ``Distribution`` 对象，它封装了一些域概率分布相关的数学函数。特别是，有一个可以从分布中进行采样的方法（这个方法在第40行中被使用）和一个计算给定样本对数概率的方法（这个方法在之后会提到）。由于PyTorch的分布对强化学习来说真的很有用，查看它们的 ``文档 <https://pytorch.org/docs/stable/distributions.html>``_ ，了解它们是如何工作的。
+
+.. admonition:: 你应该知道
+
+    温馨提示！当我们提到categorical分布有一“logits”，意思是每一个结果的概率都是logits的Softmax函数的输出。也就是说，在一个包含logits :math: x_j 的categorical分布动作 :math:`j` 的概率是：
+
+    .. math::
+
+        p_j = \frac{{\rm{exp}}(x_j)}{\sum_i{\rm{exp}}(x_i}}
+
+**2. 创建一个损失函数。**
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 32
+    :lineno-start: 42
 
-    # make loss function whose gradient, for the right data, is policy gradient
-    weights_ph = tf.placeholder(shape=(None,), dtype=tf.float32)
-    act_ph = tf.placeholder(shape=(None,), dtype=tf.int32)
-    action_masks = tf.one_hot(act_ph, n_acts)
-    log_probs = tf.reduce_sum(action_masks * tf.nn.log_softmax(logits), axis=1)
-    loss = -tf.reduce_mean(weights_ph * log_probs)
+    # 构造损失函数，输出正确的数据，输出策略梯度
+    def compute_loss(obs, act, weights):
+        logp = get_policy(obs).log_prob(act)
+        return -(logp * weights).mean()
 
 
-In this block, we build a "loss" function for the policy gradient algorithm. When the right data is plugged in, the gradient of this loss is equal to the policy gradient. The right data means a set of (state, action, weight) tuples collected while acting according to the current policy, where the weight for a state-action pair is the return from the episode to which it belongs. (Although as we will show in later subsections, there are other values you can plug in for the weight which also work correctly.)
+在本节中，我们为策略梯度算法构建了一个“损失”函数。 当输入正确的数据时，该损失的梯度等于策略梯度。 正确的数据是指根据当前策略操作时收集的一组(状态、动作、权重)元组，其中状态-动作对的权重是它所属轨迹（trajectory，episode，or rollout）的返回值。(尽管我们将在后面的小节中展示，您可以为权重插入其他值，这些值也可以正常工作。)
 
 
-.. admonition:: You Should Know
+.. admonition:: 你应该知道
     
-    Even though we describe this as a loss function, it is **not** a loss function in the typical sense from supervised learning. There are two main differences from standard loss functions.
+    尽管我们将其描述为损失函数，但它并**不**是监督学习中典型意义上的损失函数。它与标准损失函数有两个主要区别。
 
-    **1. The data distribution depends on the parameters.** A loss function is usually defined on a fixed data distribution which is independent of the parameters we aim to optimize. Not so here, where the data must be sampled on the most recent policy. 
+    **1. 数据分布取决于参数。** 损失函数通常定义在一个与我们要优化的参数无关的固定数据分布上。这里的情况并非如此，数据必须取自最近的策略。 
 
-    **2. It doesn't measure performance.** A loss function usually evaluates the performance metric that we care about. Here, we care about expected return, :math:`J(\pi_{\theta})`, but our "loss" function does not approximate this at all, even in expectation. This "loss" function is only useful to us because, when evaluated at the current parameters, with data generated by the current parameters, it has the negative gradient of performance. 
+    **2. 它并不衡量性能。** 损失函数通常评估我们关心的性能指标。这里，我们关心的是预期收益, :math:`J(\pi_{\theta})`, 但是我们的“损失”函数根本不接近这个预期收益，即使是它的期望也不接近。这个“损失”函数只对我们有用，因为当对当前参数进行评估时，使用当前参数生成的数据，它具有负的性能梯度。 
 
-    But after that first step of gradient descent, there is no more connection to performance. This means that minimizing this "loss" function, for a given batch of data, has *no* guarantee whatsoever of improving expected return. You can send this loss to :math:`-\infty` and policy performance could crater; in fact, it usually will. Sometimes a deep RL researcher might describe this outcome as the policy "overfitting" to a batch of data. This is descriptive, but should not be taken literally because it does not refer to generalization error.
+    但在第一步梯度下降之后，与性能就没有任何联系了。这意味着最小化这个“损失”函数，对于给定的一批数据，并不能保证提高预期回报。你可以把这笔损失减小到 :math:`-\infty` 同时策略的性能非常差；事实上，它通常是这样的。有时，深度强化学习研究人员可能会将这种结果描述为策略对一批数据的“过拟合”。这是未来方便理解，但不同于监督学习的“过拟合”，因为这里不涉及泛化误差。
 
-    We raise this point because it is common for ML practitioners to interpret a loss function as a useful signal during training---"if the loss goes down, all is well." In policy gradients, this intuition is wrong, and you should only care about average return. The loss function means nothing.
-
-
+   我们之所以提出这一点，是因为机器学习从业者通常会在训练期间将损失函数解释为有用的信号——“如果损失下降，一切都很好。”在策略梯度中，这种直觉是错误的，你应该只关心平均收益。损失函数没有任何意义。
 
 
-.. admonition:: You Should Know
+
+
+.. admonition:: 你应该知道
     
-    The approach used here to make the ``log_probs`` tensor---creating an action mask, and using it to select out particular log probabilities---*only* works for categorical policies. It does not work in general. 
+    这里使用的这个方法调用 ``log_prob`` PyTorch 中``Categorical`` 对象的 ``log_prob`` 方法创建一个 ``logp`` 张量。如果要使用其他分布可能需要一些修改。
 
+    例如，如果你正在使用正态分布（对角高斯策略），调用 ``policy.log_prob(act)`` 的输出将为您提供一个张量，其中包含每个向量值动作的每个元素的单独的对数概率。也就是说，当你需要的是一个形状为(batch，)张量创建强化学习的损失的时候，你输入一个形状为``(batch, act_dim)``的张量，得到一个形状``(batch, act_dim``的张量。在这种情况下，你将动作元素的对数概率相加，得到动作的对数概率。也就是说，你讲计算:
 
+    .. code-block::
 
-**3. Running One Epoch of Training.**
+    logp = get_policy(obs).log_prob(act).sum(axis=-1)
+
+**3. 运行训练的一代（epoch）。**
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 45
+    :lineno-start: 50
 
-        # for training policy
-        def train_one_epoch():
-            # make some empty lists for logging.
-            batch_obs = []          # for observations
-            batch_acts = []         # for actions
-            batch_weights = []      # for R(tau) weighting in policy gradient
-            batch_rets = []         # for measuring episode returns
-            batch_lens = []         # for measuring episode lengths
+    # 训练策略
+    def train_one_epoch():
+        # 创建一些空的列表用于存储日志
+        batch_obs = []          # 观测
+        batch_acts = []         # 动作
+        batch_weights = []      # 策略梯度中 R(tau) 的权重
+        batch_rets = []         # 测量轨迹的回报值
+        batch_lens = []         # 测量轨迹的长度
+    
+        # 重设与轨迹相关的变量
+        obs = env.reset()       # 来自于起始分布的第一个观测
+        done = False            # 环境中轨迹结束的信号
+        ep_rews = []            # 整个轨迹累计的奖励的列表
+    
+        # 渲染每代的第一个轨迹
+        finished_rendering_this_epoch = False
+    
+        # 通过在当前测量的环境中动作来收集经历
+        while True:
+    
+            # 渲染
+            if (not finished_rendering_this_epoch) and render:
+                env.render()
+    
+            # 保存观测值
+            batch_obs.append(obs.copy())
+    
+            # 在环境中执行动作（状态转移）
+            act = get_action(torch.as_tensor(obs, dtype=torch.float32))
+            obs, rew, done, _ = env.step(act)
+    
+            # 保存动作和奖励
+            batch_acts.append(act)
+            ep_rews.append(rew)
+    
+            if done:
+                # 如果轨迹结果的话，记录和轨迹相关的一些信息
+                ep_ret, ep_len = sum(ep_rews), len(ep_rews)
+                batch_rets.append(ep_ret)
+                batch_lens.append(ep_len)
+    
+                # 每个logprob(a|s) 的权重是 R(tau)
+                batch_weights += [ep_ret] * ep_len
+    
+                # 重设与轨迹相关的变量
+                obs, done, ep_rews = env.reset(), False, []
+    
+                # 这个代不会再渲染了
+                finished_rendering_this_epoch = True
+    
+                # 结束循环，如果我们有足够的经历
+                if len(batch_obs) > batch_size:
+                    break
+    
+        # 执行一步测量更新的步骤
+        optimizer.zero_grad()
+        batch_loss = compute_loss(obs=torch.as_tensor(batch_obs, dtype=torch.float32),
+                                  act=torch.as_tensor(batch_acts, dtype=torch.int32),
+                                  weights=torch.as_tensor(batch_weights, dtype=torch.float32)
+                                  )
+        batch_loss.backward()
+        optimizer.step()
+        return batch_loss, batch_rets, batch_lens
 
-            # reset episode-specific variables
-            obs = env.reset()       # first obs comes from starting distribution
-            done = False            # signal from environment that episode is over
-            ep_rews = []            # list for rewards accrued throughout ep
+``train_one_epoch()`` 函数运行策略梯度的一个“代”, 我们的定义是 
 
-            # render first episode of each epoch
-            finished_rendering_this_epoch = False
+1) 经验收集步骤 (67-102行), 智能体在环境中使用最近的策略执行一定数量的轨迹，然后是 
 
-            # collect experience by acting in the environment with current policy
-            while True:
+2) 单次策略梯度更新的步骤 (99-105行). 
 
-                # rendering
-                if not(finished_rendering_this_epoch):
-                    env.render()
+算法的主循环只是重复调用 ``train_one_epoch()``. 
 
-                # save obs
-                batch_obs.append(obs.copy())
+.. admonition:: 你应该知道
+    
+    如果您还不熟悉PyTorch中的优化，请观察执行一个梯度下降步骤的模式，如第104-111行所示。首先，清除梯度缓存。然后，计算损失函数。然后，计算损失函数的反向传递;这会将新的梯度累积到梯度缓冲区中。最后，使用优化器执行一步。
 
-                # act in the environment
-                act = sess.run(actions, {obs_ph: obs.reshape(1,-1)})[0]
-                obs, rew, done, _ = env.step(act)
+概率的对数的梯度的期望的引理（Expected Grad-Log-Prob Lemma）
+=========================================================
 
-                # save action, reward
-                batch_acts.append(act)
-                ep_rews.append(rew)
+在本节中，我们将推导出一个中间结果，它在整个策略梯度理论中被广泛使用。我们把它叫做 Expected Grad-Log-Prob (EGLP) 引理. [1]_
 
-                if done:
-                    # if episode is over, record info about episode
-                    ep_ret, ep_len = sum(ep_rews), len(ep_rews)
-                    batch_rets.append(ep_ret)
-                    batch_lens.append(ep_len)
-
-                    # the weight for each logprob(a|s) is R(tau)
-                    batch_weights += [ep_ret] * ep_len
-
-                    # reset episode-specific variables
-                    obs, done, ep_rews = env.reset(), False, []
-
-                    # won't render again this epoch
-                    finished_rendering_this_epoch = True
-
-                    # end experience loop if we have enough of it
-                    if len(batch_obs) > batch_size:
-                        break
-
-            # take a single policy gradient update step
-            batch_loss, _ = sess.run([loss, train_op],
-                                     feed_dict={
-                                        obs_ph: np.array(batch_obs),
-                                        act_ph: np.array(batch_acts),
-                                        weights_ph: np.array(batch_weights)
-                                     })
-            return batch_loss, batch_rets, batch_lens
-
-The ``train_one_epoch()`` function runs one "epoch" of policy gradient, which we define to be 
-
-1) the experience collection step (L62-97), where the agent acts for some number of episodes in the environment using the most recent policy, followed by 
-
-2) a single policy gradient update step (L99-105). 
-
-The main loop of the algorithm just repeatedly calls ``train_one_epoch()``. 
-
-
-Expected Grad-Log-Prob Lemma
-============================
-
-In this subsection, we will derive an intermediate result which is extensively used throughout the theory of policy gradients. We will call it the Expected Grad-Log-Prob (EGLP) lemma. [1]_
-
-**EGLP Lemma.** Suppose that :math:`P_{\theta}` is a parameterized probability distribution over a random variable, :math:`x`. Then: 
+**EGLP Lemma.** 假设 :math:`P_{\theta}` 是一个随机变量 :math:`x` 的参数化概率分布。 则: 
 
 .. math::
 
     \underE{x \sim P_{\theta}}{\nabla_{\theta} \log P_{\theta}(x)} = 0.
 
-.. admonition:: Proof
+.. admonition:: 证明
 
-    Recall that all probability distributions are *normalized*:
+    回想一下，所有的概率分布都是**标准化**的:
 
     .. math::
 
         \int_x P_{\theta}(x) = 1.
 
-    Take the gradient of both sides of the normalization condition:
+    对归一化条件的等式两侧取梯度:
 
     .. math::
 
         \nabla_{\theta} \int_x P_{\theta}(x) = \nabla_{\theta} 1 = 0.
 
-    Use the log derivative trick to get:
+    用对数导数的技巧得到:
 
     .. math::
 
@@ -275,36 +300,36 @@ In this subsection, we will derive an intermediate result which is extensively u
         &= \int_x P_{\theta}(x) \nabla_{\theta} \log P_{\theta}(x) \\
         \therefore 0 &= \underE{x \sim P_{\theta}}{\nabla_{\theta} \log P_{\theta}(x)}.
 
-.. [1] The author of this article is not aware of this lemma being given a standard name anywhere in the literature. But given how often it comes up, it seems pretty worthwhile to give it some kind of name for ease of reference.
+.. [1] 本文的作者没有意识到这个引理在任何文献中都有一个标准的名称。但考虑到它出现的频率，为方便参考，给它起个名字似乎是很值得的。
 
-Don't Let the Past Distract You
+不要让过去分散你的注意力
 ===============================
 
-Examine our most recent expression for the policy gradient:
+检查我们最近的策略梯度的表达式:
 
 .. math::
 
     \nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau)}.
+ 
+采用这种梯度走一步，每个动作的对数概率就会与 :math:`R(\tau)` 成比例增加，即 *所有获得的奖励总和*。但这没有多大意义。
 
-Taking a step with this gradient pushes up the log-probabilities of each action in proportion to :math:`R(\tau)`, the sum of *all rewards ever obtained*. But this doesn't make much sense. 
+智能体确实应该只在“结果”的基础上强化动作。在采取动作之前获得的奖励与该行动有多好无关:只有“之后”才会获得奖励。
 
-Agents should really only reinforce actions on the basis of their *consequences*. Rewards obtained before taking an action have no bearing on how good that action was: only rewards that come *after*.
-
-It turns out that this intuition shows up in the math, and we can show that the policy gradient can also be expressed by
+这种直觉在数学中也有体现，我们可以证明策略梯度也可以用
 
 .. math::
 
     \nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1})}.
 
-In this form, actions are only reinforced based on rewards obtained after they are taken. 
+在这种形式中，行动只会基于采取动作后获得的奖励而得到强化。
 
-We'll call this form the "reward-to-go policy gradient," because the sum of rewards after a point in a trajectory,
+我们称这种形式为 "reward-to-go policy gradient," 因为是轨迹上某一点之后的奖励总和，
 
 .. math::
 
     \hat{R}_t \doteq \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1}),
 
-is called the **reward-to-go** from that point, and this policy gradient expression depends on the reward-to-go from state-action pairs.
+从这一点之后被称为**reward-to-go**,这个策略梯度表达式依赖于来自状态-行动对的奖励。
 
 .. admonition:: You Should Know
 
