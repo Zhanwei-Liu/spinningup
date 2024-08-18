@@ -8,23 +8,23 @@
 
 欢迎来到强化学习的介绍部分！我们希望你能了解以下内容：
 
-* 常见的符号表示
-* 高层次的理解：关于强化学习算法做什么（我们会尽量避免 *如何做* 这个话题）
-* 算法背后的核心数学知识
+* 这部分讨论用到的数学符号表示
+* 关于强化学习算法做什么的一个深层解释（我们会尽量避免提及 *他们是如何做到的* 这个话题）
+* 以及算法背后的一些核心数学知识
 
-总的来说，强化学习是关于智能体以及它们如何通过试错来学习的研究。它确定了通过奖励或惩罚智能体的动作从而使它未来更容易重复或者放弃某一动作的思想。
+总的来说，强化学习是关于智能体（agents）以及它们如何通过试错来学习的研究。达成了这样一个共识：通过奖励或惩罚智能体（agents）的行为从而使它未来更容易重复或者放弃某一行为。
 
 强化学习能做什么
 ===============
 
-基于强化学习的方法已经在很多地方取得了成功。例如，它被用来教电脑在仿真环境下控制机器人（YouTube视频）：
+基于强化学习的方法已经在很多地方取得了成功。例如，它被用来教计算机在仿真环境下控制机器人：
 
 .. raw:: html
 
     <video autoplay="" src="https://storage.googleapis.com/joschu-public/knocked-over-stand-up.mp4" loop="" controls="" style="display: block; margin-left: auto; margin-right: auto; margin-bottom:1.5em; width: 100%; max-width: 720px; max-height: 80vh;">
     </video>
 
-以及在现实世界中的机器人（YouTube视频）：
+以及在现实世界中控制机器：
 
 .. raw:: html
 
@@ -33,7 +33,7 @@
     </div>
     <br />
 
-强化学习因为被用在复杂策略游戏创造出突破性的 AI 中而名声大噪，最著名的要数 `围棋`_ 、 `Dota`_ 、教电脑 `玩Atari游戏`_ 以及训练模拟机器人 `听从人类的指令`_ 。
+强化学习因为被用在复杂策略游戏创造出突破性的 AI 中而名声大噪，最著名的要数 `围棋`_ 、 `Dota`_ 、教计算机 `玩Atari游戏`_ 以及训练模拟机器人 `听从人类的指令`_ 。
 
 .. _`围棋`: https://deepmind.com/research/alphago/
 .. _`Dota`: https://blog.openai.com/openai-five/
@@ -47,48 +47,48 @@
 .. figure:: ../images/rl_diagram_transparent_bg.png
     :align: center
     
-    智能体和环境的循环作用
+    智能体和环境的循环交互
 
-强化学习的主要角色是 **智能体** 和 **环境**,环境是智能体存在和互动的世界。智能体在每一步的交互中，都会获得对于所处环境状态的观察（有可能只是一部分），然后决定下一步要执行的动作。环境会因为智能体对它的动作而改变，也可能自己改变。
+强化学习的主要特征是 **智能体** （agents）和 **环境**（environment），环境是智能体生存和互动的世界。在每一步的交互中，智能体都能得到一个这个世界的（有可能只是一部分）状态（state）的观察（observation），然后决定要采取的动作。环境会因为智能体对它的动作（actions）而改变，也可能自己改变。
 
-智能体也会从环境中感知到 **奖励** 信号，一个表明当前状态好坏的数字。智能体的目标是最大化累计奖励，也就是 **回报**。强化学习就是智能体通过学习来完成目标的方法。
+智能体也会从环境中感知到 **奖励**（reward） 信号，一个表明当前世界状态好坏的数字。智能体的目标是最大化它获得的累计奖励，也就是 **回报**（return）。强化学习方法就是智能体通过学习行为来完成目标的方式。
 
-为了便于后面的学习，我们介绍一些术语：
+为了更具体地讨论强化学习的作用，我们需要引入一些的术语：
 
 * 状态和观察(states and observations)
 * 动作空间(action spaces)
 * 策略(policies)
-* 行动轨迹(trajectories)
-* 不同的回报公式(formulations of return)
+* 轨迹(trajectories)
+* 不同的回报公式(different formulations of return)
 * 强化学习优化问题(the RL optimization problem)
-* 值函数(value functions)
+* 和值函数(value functions)
 
-状态和观察
------------------------
+状态和观察（States and Observations）
+------------------------------------
 
-一个 **状态** :math:`s` 是一个关于这个世界状态的完整描述。这个世界除了状态以外没有别的信息。**观察** :math:`o` 是对于一个状态的部分描述，可能会漏掉一些信息。
+一个 **状态** :math:`s` 是一个关于这个世界状态的完整描述。这个世界所有的信息都包含在状态中。**观察** :math:`o` 是对于一个状态的部分描述，可能会漏掉一些信息。
 
-在深度强化学习中，我们一般用 `实数向量、矩阵或者更高阶的张量（tensor）`_ 表示状态和观察。比如说，视觉上的 **观察** 可以用RGB矩阵的方式表示其像素值；机器人的 **状态** 可以通过关节角度和速度来表示。
+在深度强化学习中，我们一般用 `实数向量、矩阵或者更高阶的张量（tensor）`_ 表示状态和观察。比如说，图像的 **观察** 可以用RGB矩阵的方式表示其像素值；机器人的 **状态** 可以通过关节角度和速度来表示。
 
-如果智能体观察到环境的全部状态，我们通常说环境是被 **全面观察** 的。如果智能体只能观察到一部分，我们称之为 **部分观察**。
+如果智能体观察到环境的全部状态，我们通常说环境是被 **全面观察** （fully observed）的。如果智能体只能观察到一部分状态，我们称之为 **部分观察**（partially observed）。
 
 .. admonition:: 你应该知道
 
-    强化学习有时候用这个符号 :math:`s` 代表状态 , 有些地方也会写作观察符号 :math:`o`.  尤其是，当智能体在决定采取什么动作的时候，符号上的表示按理动作是基于状态的，但实际上，动作是基于观察的，因为智能体并不能知道状态（只能通过观察了解状态）。
+    强化学习有时候用表示状态的符号 :math:`s` 放在一些适合使用符号 :math:`o` 的地方来表示观察.  尤其是，当智能体在决定采取什么动作的时候，符号上的表示按理说动作是基于当前状态的决定的，但实际上，因为智能体并不能知道状态所以动作是基于观察的。
 
     在我们的教程中，我们会按照标准的方式使用这些符号，不过你一般能从上下文中看出来具体表示什么。如果你觉得有些内容不够清楚，请提出issue！我们的目的是教会大家，不是让大家混淆。
 
 .. _`实数向量、矩阵或者更高阶的张量（tensor）`: https://en.wikipedia.org/wiki/Real_coordinate_space
 
-动作空间
--------------
+动作空间（Action Spaces）
+--------------------------
 
-不同的环境有不同的动作。所有有效动作的集合称之为 **动作空间**。有些环境，比如说 Atari 游戏和围棋，属于 **离散动作空间**，这种情况下智能体只能采取有限的动作。其他的一些环境，比如智能体在物理世界中控制机器人，属于 **连续动作空间**。在连续动作空间中，动作是实数向量。
+不同的环境允许不同的动作。所有有效动作的集合称之为 **动作空间**。有些环境，比如说 Atari 游戏和围棋，属于 **离散动作空间**，这种情况下智能体只能采取有限的动作。其他的一些环境，比如智能体在物理世界中控制机器人，属于 **连续动作空间**。在连续动作空间中，动作是实数向量。
 
-这种区别对于深度强化学习来说，影响深远。有些种类的算法只能直接用在某些案例上，如果需要用在别的地方，可能就需要大量重写代码。
+这种区别对于深度强化学习来说影响很大。有些算法只能直接用在某些某一种情况，如果需要想使用于另外的情况，可能就需要改进很多。
 
-策略
---------
+策略（Policies）
+---------------
 
 **策略** 是智能体用于决定下一步执行什么行动的规则。可以是确定性的，一般表示为：:math:`\mu`:
 
@@ -102,55 +102,66 @@
 
     a_t \sim \pi(\cdot | s_t).
 
-因为策略本质上就是智能体的大脑，所以很多时候“策略”和“智能体”这两个名词经常互换，例如我们会说：“策略的目的是最大化奖励”。
+因为策略本质上就是智能体的大脑，所以很多时候“策略”和“智能体”这两个名词经常混用，例如我们会说：“策略的目的是最大化奖励”。
 
 在深度强化学习中，我们处理的是参数化的策略，这些策略的输出，依赖于一系列计算函数，而这些函数又依赖于参数（例如神经网络的权重和误差），所以我们可以通过一些优化算法改变智能体的的行为。
 
-我们经常把这些策略的参数写作 :math:`\theta` 或者 :math:`\phi` ，然后把它写在策略的下标上来强调两者的联系。
+我们经常把这些策略的参数计为 :math:`\theta` 或 :math:`\phi` ，然后把它写在策略的下标上来强调两者的联系。
 
 .. math::
 
     a_t &= \mu_{\theta}(s_t) \\
     a_t &\sim \pi_{\theta}(\cdot | s_t).
 
+确定性策略（Deterministic Policies）
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-确定性策略
-^^^^^^^^^^^^^^^^^^^^^^
-
-**例子：确定性策略：** 这是一个基于 TensorFlow 在连续动作空间上确定性策略的简单例子：
+**例子：确定性策略：** 这是一个基于 PyTorch 使用 `torch.nn` 库在连续动作空间上构建一个确定性策略的简单例子：
 
 .. code-block:: python
 
-    obs = tf.placeholder(shape=(None, obs_dim), dtype=tf.float32)
-    net = mlp(obs, hidden_dims=(64,64), activation=tf.tanh)
-    actions = tf.layers.dense(net, units=act_dim, activation=None)
+    pi_net = nn.Sequential(
+              nn.Linear(obs_dim, 64),
+              nn.Tanh(),
+              nn.Linear(64, 64),
+              nn.Tanh(),
+              nn.Linear(64, act_dim)
+            )
 
-其中，*mlp* 是把多个给定大小和激活函数的 *密集层* （dense layer）相互堆积在一起的函数。
+这里构建了一个多层感知器的网络，包含两个有大小为64的隐含层和`tanh`激活函数，如果`obs`是一个包含一批观测值的Numpy数组，`pi_net`能够使用来获得一批动作：
 
-随机性策略
-^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
 
-深度强化学习中最常见的两种随机策略是 **绝对策略** (Categorical Policies) 和 **对角高斯策略** (Diagonal Gaussian Policies)。
+    obs_tensor = torch.as_tensor(obs, dtype=torch.float32)
+    actions = pi_net(obs_tensor)
 
-`确定`_ 策略适用于离散行动空间，而
-`高斯`_ 策略一般用在连续行动空间
+.. admonition:: 你应该知道
 
-使用和训练随机策略的时候有两个重要的计算：
+    如果你对神经网络的内容不熟悉，也不要担心，本教程将侧重于强化学习，而不是神经网络方面的内容。因此，您可以跳过这个示例，稍后再回到它。但我们觉得如果你已经知道了，可能会有帮助。
+
+随机性策略（Stochastic Policies）
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+深度强化学习中最常见的两类随机策略是 **分类策略** (Categorical Policies) 和 **对角高斯策略** (Diagonal Gaussian Policies)。
+
+`分类`_ 策略适用于离散行动空间，而 `高斯`_ 策略一般用在连续行动空间。
+
+使用和训练随机策略的时候有两个重要的计算步骤是：
 
 * 从策略中采样行动
-* 计算特定行为的似然(likelihoods) :math:`\log \pi_{\theta}(a|s)`.
+* 计算给定行为的对数似然函数(log likelihoods) :math:`\log \pi_{\theta}(a|s)`.
 
 
-下面我们介绍一下这两种策略
+在接下来的内容中，我们将描述如何使用分类策略和对角高斯策略实现这两个计算步骤。
 
 
-.. admonition:: 绝对策略
+.. admonition:: 分类策略
 
-    确定策略就像是一个离散空间的分类器(classifier)。对于分类器和确定策略来说，建立神经网络的方式一模一样：输入是观察，接着是一些卷积、全连接层之类的，至于具体是哪些取决于输入的类型，最后一个线性层给出每个行动的 log 数值(logits)，后面跟一个 `softmax`_ 层把 log 数值转换为可能性。   
+    分类策略就像是一个离散空间的分类器(classifier)。像建立一个分类器的神经网络一样建立一个分类策略的神经网络：输入是观察，接着是一些卷积、全连接层之类的，至于具体是哪些取决于输入的类型，最后一个线性层给出每个行动的 log 数值(logits)，后面跟一个 `softmax`_ 层把 log 数值转换为概率。   
 
-    **采样** 给定每个行动的可能性，TensorFlow之类的框架有内置采样工。具体可查阅 `tf.distributions.Categorical`_  或 `tf.multinomial`_ 的文档。
+    **采样** 已知每个行动的概率，PyTorch和Tensorflow之类的框架有内置函数可以进行采样。具体可查阅 `Categorical distributions`_, `torch.multinomial`_, `tf.distributions.Categorical`_ , 或 `tf.multinomial`_ 。
 
-    **对数似然** ：表示最后一层的可能性 :math:`P_{\theta}(s)`。它是一个有很多值的向量，我们可以把行动当做向量的索引。所以向量的对数似然值 :math:`a` 可以通过这样得到：
+    **对数似然** ：最后一层的概率定义为 :math:`P_{\theta}(s)`。它是一个和动作数量相同的向量，我们可以把动作当做索引。所以动作 :math:`a` 对数似然值可以通过这样得到：
 
 
     .. math::
@@ -166,26 +177,26 @@
 
     **第一种** ： 有一个单独的关于对数标准差的向量： :math:`\log \sigma`，它不是关于状态的函数，:math:`\log \sigma` 而是单独的参数（我们这个项目里，VPG, TRPO 和 PPO 都是用这种方式实现的）。
 
-    **第二种** ：有一个神经网络，从状态映射到对数标准差 :math:`\log \sigma_{\theta}(s)`。这种方式可能会均值网络共享某些层的参数。
+    **第二种** ：有一个神经网络，从状态映射到对数标准差 :math:`\log \sigma_{\theta}(s)`。这种方式可能会和均值网络共享某些层的参数。
 
-    要注意这两种情况下我们都没有直接计算标准差而是对数标准差。这是因为对数标准差能够接受 :math:`(-\infty, \infty)` 的任何值，而标准差必须要求参数非负。要知道，限制条件越少，训练就越简单。而标准差可以通过取幂快速从对数标准差中计算得到，所以这种表示方法也不会丢失信息。
+    要注意这两种情况下我们都没有直接计算标准差而是计算了对数标准差。这是因为对数标准差的定义域是 :math:`(-\infty, \infty)` ，而标准差必须要求参数非负。约束条件越少，训练就越简单。而标准差可以通过对数标准差取幂得到，所以这种表示方法也不会丢失信息。
 
-    **采样** ：给定平均行动  :math:`\mu_{\theta}(s)` 和 标准差 :math:`\sigma_{\theta}(s)`，以及一个服从球形高斯分布的噪声向量 :math:`z`，行为的样本可以这样计算：
+    **采样** ：给定平均动作  :math:`\mu_{\theta}(s)` 和 标准差 :math:`\sigma_{\theta}(s)`，以及一个服从球形高斯分布的噪声向量 :math:`z`，动作的样本可以这样计算：
 
     .. math::
 
         a = \mu_{\theta}(s) + \sigma_{\theta}(s) \odot z,
 
-    这里 :math:`\odot` 表示两个向量按元素乘。标准框架都有内置噪声向量实现，例如  `tf.random_normal`_ 。你也可以直接用 `tf.distributions.Normal`_ 以均值和标准差的方式采样。
+    这里 :math:`\odot` 表示两个向量的点积。标准框架都有内置函数生成噪音向量，例如  `torch.normal`_ 和 `tf.random_normal`_ 。你也可以直接内置分布例如 `torch.distributions.Normal`_ 或者 `tf.distributions.Normal`_ 采样(后者的优势是哪些分布函数可以直接为你计算对数似然)。
 
-    **对数似然** 一个 k 维行动 :math:`a` 基于均值为 :math:`\mu = \mu_{\theta}(s)`，标准差为 :math:`\sigma = \sigma_{\theta}(s)` 的对角高斯的对数似然：
+    **对数似然** 一个 k 维动作 :math:`a` 基于均值为 :math:`\mu = \mu_{\theta}(s)`，标准差为 :math:`\sigma = \sigma_{\theta}(s)` 的对角高斯的对数似然如下：
 
 
     .. math::
 
         \log \pi_{\theta}(a|s) = -\frac{1}{2}\left(\sum_{i=1}^k \left(\frac{(a_i - \mu_i)^2}{\sigma_i^2} + 2 \log \sigma_i \right) + k \log 2\pi \right).
 
-.. _`确定`: https://en.wikipedia.org/wiki/Categorical_distribution
+.. _`分类`: https://en.wikipedia.org/wiki/Categorical_distribution
 .. _`高斯`: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 .. _`softmax`: https://developers.google.com/machine-learning/crash-course/multi-class-neural-networks/softmax
 .. _`tf.distributions.Categorical`: https://www.tensorflow.org/api_docs/python/tf/distributions/Categorical
@@ -193,8 +204,8 @@
 .. _`tf.random_normal`: https://www.tensorflow.org/api_docs/python/tf/random_normal
 .. _`tf.distributions.Normal`: https://www.tensorflow.org/api_docs/python/tf/distributions/Normal
 
-运动轨迹
-------------
+轨迹（Trajectories）
+--------------------
 
 运动轨迹 :math:`\tau` 指的是状态和行动的序列。
 
