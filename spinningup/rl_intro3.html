@@ -1,0 +1,700 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>第三部分：策略优化介绍 &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="深度强化学习研究者的资料" href="spinningup.html" />
+    <link rel="prev" title="第二部分：强化学习算法概述" href="rl_intro2.html" /> 
+ <script type="text/javascript">
+ 
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?7e494634f392b55baa85cfd2b508ae23";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+
+ 
+ </script> 
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">用户文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">项目介绍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">核心算法及其实现</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">运行试验</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">试验输出</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">绘制结果</a></li>
+</ul>
+<p class="caption"><span class="caption-text">强化学习介绍</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="rl_intro.html">第一部分：强化学习中的核心概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">第二部分：强化学习算法概述</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">第三部分：策略优化介绍</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#deriving-the-simplest-policy-gradient">推导最简单的策略梯度（Deriving the Simplest Policy Gradient）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementing-the-simplest-policy-gradient">实现最简单的策略梯度（Implementing the Simplest Policy Gradient）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#expected-grad-log-prob-lemma">概率的对数的梯度的期望的引理（Expected Grad-Log-Prob Lemma）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#section-2">不要让过去分散你的注意力</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementing-reward-to-go-policy-gradient">Implementing Reward-to-Go Policy Gradient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#baselines-in-policy-gradients">Baselines in Policy Gradients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-forms-of-the-policy-gradient">Other Forms of the Policy Gradient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recap">Recap</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">资源</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinningup.html">深度强化学习研究者的资料</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">深度强化学习的核心论文</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises.html">练习</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Spinning Up 算法实现的基准</a></li>
+</ul>
+<p class="caption"><span class="caption-text">算法文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">工具文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">日志打印</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">绘图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI 工具</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">运行工具</a></li>
+</ul>
+<p class="caption"><span class="caption-text">其他</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">致谢</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/translator.html">关于译者</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>第三部分：策略优化介绍</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/Zhanwei-Liu/spinningup/blob/master/docs/spinningup/rl_intro3.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="section-1">
+<h1><a class="toc-backref" href="#toc-entry-1">第三部分：策略优化介绍</a><a class="headerlink" href="#section-1" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#section-1" id="toc-entry-1">第三部分：策略优化介绍</a><ul>
+<li><a class="reference internal" href="#deriving-the-simplest-policy-gradient" id="toc-entry-2">推导最简单的策略梯度（Deriving the Simplest Policy Gradient）</a></li>
+<li><a class="reference internal" href="#implementing-the-simplest-policy-gradient" id="toc-entry-3">实现最简单的策略梯度（Implementing the Simplest Policy Gradient）</a></li>
+<li><a class="reference internal" href="#expected-grad-log-prob-lemma" id="toc-entry-4">概率的对数的梯度的期望的引理（Expected Grad-Log-Prob Lemma）</a></li>
+<li><a class="reference internal" href="#section-2" id="toc-entry-5">不要让过去分散你的注意力</a></li>
+<li><a class="reference internal" href="#implementing-reward-to-go-policy-gradient" id="toc-entry-6">Implementing Reward-to-Go Policy Gradient</a></li>
+<li><a class="reference internal" href="#baselines-in-policy-gradients" id="toc-entry-7">Baselines in Policy Gradients</a></li>
+<li><a class="reference internal" href="#other-forms-of-the-policy-gradient" id="toc-entry-8">Other Forms of the Policy Gradient</a></li>
+<li><a class="reference internal" href="#recap" id="toc-entry-9">Recap</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>在这个部分，我们会讨论策略优化算法的数学基础，同时提供样例代码。我们会包括策略优化的以下三个部分</p>
+<ul class="simple">
+<li><a href="#system-message-1"><span class="problematic" id="problematic-1">**</span></a>最简单的等式**描述策略性能对于策略参数的梯度，</li>
+<li>一个让我们可以**舍弃无用项**的公式，</li>
+<li>一个让我们可以**添加有用参数**的公式。</li>
+</ul>
+<p>最后，我们会把结果放在一起，然后描述基于优势函数的策略梯度的表达式： 我们在 <a class="reference external" href="../algorithms/vpg.html">Vanilla Policy Gradient</a> 的实现中使用的版本。</p>
+<div class="section" id="deriving-the-simplest-policy-gradient">
+<h2><a class="toc-backref" href="#toc-entry-2">推导最简单的策略梯度（Deriving the Simplest Policy Gradient）</a><a class="headerlink" href="#deriving-the-simplest-policy-gradient" title="Permalink to this headline">¶</a></h2>
+<p>我们考虑一种基于随机参数化的策略： <span class="math">\(\pi_{\theta}\)</span> 。我们的目的是最大化期望回报 <span class="math">\(J(\pi_{\theta}) = \mathop{\mathbb{E}}\limits_{\tau \sim \pi_{\theta}}[R(\tau)]\)</span> 。为了公式推导，我们假定 <span class="math">\(R(\tau)\)</span> 是 <cite>有限时域无折扣回报</cite>，但是对于无限时域折扣回报来说也是一样的。</p>
+<p>我们想要通过梯度下降（gradient ascent）来优化策略，例如</p>
+<div class="math">
+\[\theta_{k+1} = \theta_k + \alpha \left. \nabla_{\theta} J(\pi_{\theta}) \right|_{\theta_k}.\]</div>
+<p>策略性能的梯度 <span class="math">\(\nabla_{\theta} J(\pi_{\theta})\)</span> ，通常被称为 <strong>策略梯度</strong> (policy gradient) ，以这种方式优化策略的算法被称为 <strong>策略梯度算法</strong> (policy gradient algorithms)。（比如说 Vanilla Policy Gradient 和 TRPO。PPO 也被称为策略梯度算法，尽管这样说不是很准确。）</p>
+<p>为了在实际中使用这个算法, 我们需要能够在数值计算中使用的表达式. 这涉及到两个步骤: 1) 推导策略性能的梯度的解析式, 它的形式是一个期望值 2) 计算期望值的样本估计，可以用有限数量的智能体和环境交互的数据来计算。</p>
+<p>在这个小节中，我们介绍这个表达式最简单的形式. 这之后的小节中, 我们将展示如何改进最简单的形式，以获得我们在标准策略梯度算法实现中实际使用的版本。</p>
+<p>我们首先列出一些对推导梯度解析式有用的等式。</p>
+<p><strong>1. 轨迹的概率（Probability of a Trajectory）。</strong> 已知动作（actions）来自于随机策略 <span class="math">\(\pi_{\theta}\)</span> 的一个轨迹（trajectory等价于episode或rollout） <span class="math">\(\tau = (s_0, a_0, ..., s_{T+1})\)</span> 发生的概率是:</p>
+<div class="math">
+\[P(\tau|\theta) = \rho_0 (s_0) \prod_{t=0}^{T} P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t |s_t).\]</div>
+<p><span class="math">\(s_0 ~ \rho_0 (s)\)</span> 是初始状态分布； <span class="math">\(s_{t+1} ~ P(s_{t+1}|s_t,a_t)\)</span> 是状态转移概率； <span class="math">\(\pi_{\theta}(a_t |s_t)\)</span> 是随机策略。</p>
+<p><strong>2. 对数求导技巧(The Log-Derivative Trick).</strong> 对数求导的技巧是基于微积分中的简单求导法则: <span class="math">\(\log x\)</span> 对 <span class="math">\(x\)</span> 求导的结果是 <span class="math">\(1/x\)</span> 。当重新排列并结合链式法则时，我们得到:</p>
+<div class="math">
+\[\nabla_{\theta} P(\tau | \theta) = P(\tau | \theta) \nabla_{\theta} \log P(\tau | \theta).\]</div>
+<p><strong>3. 轨迹发生概率的对数（Log-Probability of a Trajectory）.</strong> 一个轨迹发生概率的对数为</p>
+<div class="math">
+\[\log P(\tau|\theta) = \log \rho_0 (s_0) + \sum_{t=0}^{T} \bigg( \log P(s_{t+1}|s_t, a_t)  + \log \pi_{\theta}(a_t |s_t)\bigg).\]</div>
+<p><strong>4. 环境函数的梯度（Gradients of Environment Functions）.</strong> 环境和 <span class="math">\(\theta\)</span> 无关,  <span class="math">\(\rho_0(s_0)\)</span>, <span class="math">\(P(s_{t+1}|s_t, a_t)\)</span>, 和 <span class="math">\(R(\tau)\)</span> 对 <span class="math">\(\theta\)</span> 的梯度为0.</p>
+<p><strong>5. 轨迹发生概率的对数的梯度（Grad-Log-Prob of a Trajectory）.</strong> 轨迹发生概率的对数的梯度可以表示为：</p>
+<div class="math">
+\[\begin{split}\nabla_{\theta} \log P(\tau | \theta) &amp;= \cancel{\nabla_{\theta} \log \rho_0 (s_0)} + \sum_{t=0}^{T} \bigg( \cancel{\nabla_{\theta} \log P(s_{t+1}|s_t, a_t)}  + \nabla_{\theta} \log \pi_{\theta}(a_t |s_t)\bigg) \\
+&amp;= \sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t).\end{split}\]</div>
+<p>把上面五个规则代入到一起我们可以推导出:</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">基本的策略梯度的推导</p>
+<div class="last math">
+\begin{align*}
+\nabla_{\theta} J(\pi_{\theta}) &amp;= \nabla_{\theta} \underE{\tau \sim \pi_{\theta}}{R(\tau)} &amp; \\
+&amp;= \nabla_{\theta} \int_{\tau} P(\tau|\theta) R(\tau) &amp; \text{展开期望} \\
+&amp;= \int_{\tau} \nabla_{\theta} P(\tau|\theta) R(\tau) &amp; \text{把梯度算子代入到积分中} \\
+&amp;= \int_{\tau} P(\tau|\theta) \nabla_{\theta} \log P(\tau|\theta) R(\tau) &amp; \text{对数求导技巧(The Log-Derivative Trick)} \\
+&amp;= \underE{\tau \sim \pi_{\theta}}{\nabla_{\theta} \log P(\tau|\theta) R(\tau)} &amp; \text{再转化为一个期望的形式} \\
+\therefore \nabla_{\theta} J(\pi_{\theta}) &amp;= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau)} &amp; \text{轨迹概率对数梯度的表达式}
+\end{align*}</div></div>
+<p>这是一个期望，我们可以使用样本均值去估计它. 如果我们收集了一个轨迹集合 <span class="math">\(\mathcal{D} = \{\tau_i\}_{i=1,...,N}\)</span> 式子中的轨迹是通过让智能体在环境中使用策略 <span class="math">\(\pi_{\theta}\)</span> 生成动作来指导运行获得的, 策略梯度则能够使用下式估计：</p>
+<div class="math">
+\[\hat{g} = \frac{1}{|\mathcal{D}|} \sum_{\tau \in \mathcal{D}} \sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau),\]</div>
+<p>式中 <span class="math">\(|\mathcal{D}|\)</span> 集合 <span class="math">\(\mathcal{D}\)</span> 中轨迹的数量(这里定义为, <span class="math">\(N\)</span>).</p>
+<p>最后一个表达式是我们想要的可以进行计算的最简单版本。 假设我们已经用一种可以计算 <span class="math">\(\nabla_{\theta} \log \pi_{\theta}(a|s)\)</span> 的方式来表示我们的策略且我们能够运行在环境中运行策略去收集轨迹中的数据集, 那么我们就可以计算策略梯度并执行更新步骤.</p>
+</div>
+<div class="section" id="implementing-the-simplest-policy-gradient">
+<h2><a class="toc-backref" href="#toc-entry-3">实现最简单的策略梯度（Implementing the Simplest Policy Gradient）</a><a class="headerlink" href="#implementing-the-simplest-policy-gradient" title="Permalink to this headline">¶</a></h2>
+<p>在 <code class="docutils literal"><span class="pre">spinup/examples/pytorch/pg_math/1_simple_pg.py</span></code> 中我们给出了这个简单版本的策略梯度算法的简短PyTorch实现。 (它也能在 <a class="reference external" href="https://github.com/openai/spinningup/blob/master/spinup/examples/pytorch/pg_math/1_simple_pg.py">github</a> 查看。) 它只有128行，所以我们强烈建议深入阅读。虽然我们不会在这里讨论全部代码，但我们将重点介绍和解释一些重要的部分。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">这部分先前写了一个Tensorflow的例子，老的Tensorflow部分能够在 <a class="reference external" href="https://spinningup.openai.com/en/latest/spinningup/extra_tf_pg_implementation.html#implementing-the-simplest-policy-gradient">这里</a> 查看。</p>
+</div>
+<p><strong>1. 创建一个策略网络。</strong></p>
+<div class="highlight-python"><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><span class="c1"># 创建策略网络的核心</span>
+<span class="n">logits_net</span> <span class="o">=</span> <span class="n">mlp</span><span class="p">(</span><span class="n">sizes</span><span class="o">=</span><span class="p">[</span><span class="n">obs_dim</span><span class="p">]</span><span class="o">+</span><span class="n">hidden_sizes</span><span class="o">+</span><span class="p">[</span><span class="n">n_acts</span><span class="p">])</span>
+
+<span class="c1"># 创建一个函数去计算动作分布</span>
+<span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">):</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">logits_net</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span>
+
+<span class="c1"># 创建通过选择的函数（输出是一个从策略中采样的动作）</span>
+<span class="k">def</span> <span class="nf">get_action</span><span class="p">(</span><span class="n">obs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">get_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</pre></div></td></tr></table></div>
+</div>
+<p>本模块构建了使用前馈神经网络分类策略的模块和函数。 (查看第一部分的 <a class="reference external" href="../spinningup/rl_intro.html#stochastic-policies">Stochastic Policies</a> 章节进行回顾。)  <code class="docutils literal"><span class="pre">logits_net</span></code> 模块的输出可以被用来构建概率的对数和动作的概率, <code class="docutils literal"><span class="pre">get_action</span></code> 函数基于 <code class="docutils literal"><span class="pre">logits</span></code> 计算的概率对动作进行采样。
+（注意： <code class="docutils literal"><span class="pre">get_action</span></code> 函数假设仅有一个 <code class="docutils literal"><span class="pre">obs</span></code> 被提供，因此仅有一个整数的动作输出，这就是为什么使用了 <code class="docutils literal"><span class="pre">.item()</span></code> ,使用这个能够 <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor.item">从张量中提取一个元素</a> 。）</p>
+<p>在这个例子中，大量的工作都被35行的 <code class="docutils literal"><span class="pre">Categorical</span></code> 对象完成了。这是一个PyTorch版本的 <code class="docutils literal"><span class="pre">Distribution</span></code> 对象，它封装了一些域概率分布相关的数学函数。特别是，有一个可以从分布中进行采样的方法（这个方法在第40行中被使用）和一个计算给定样本对数概率的方法（这个方法在之后会提到）。由于PyTorch的分布对强化学习来说真的很有用，查看它们的 <a href="#system-message-2"><span class="problematic" id="problematic-2">``</span></a>文档 &lt;<a class="reference external" href="https://pytorch.org/docs/stable/distributions.html">https://pytorch.org/docs/stable/distributions.html</a>&gt;``_ ，了解它们是如何工作的。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p>温馨提示！当我们提到categorical分布有一“logits”，意思是每一个结果的概率都是logits的Softmax函数的输出。也就是说，在一个包含logits :math: x_j 的categorical分布动作 <span class="math">\(j\)</span> 的概率是：</p>
+<div class="last math">
+\[p_j = \frac{{\rm{exp}}(x_j)}{\sum_i{\rm{exp}}(x_i}}\]</div>
+</div>
+<p><strong>2. 创建一个损失函数。</strong></p>
+<div class="highlight-python"><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><span class="c1"># 构造损失函数，输出正确的数据，输出策略梯度</span>
+<span class="k">def</span> <span class="nf">compute_loss</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">act</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+    <span class="n">logp</span> <span class="o">=</span> <span class="n">get_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">act</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="n">logp</span> <span class="o">*</span> <span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div></td></tr></table></div>
+</div>
+<p>在本节中，我们为策略梯度算法构建了一个“损失”函数。 当输入正确的数据时，该损失的梯度等于策略梯度。 正确的数据是指根据当前策略操作时收集的一组(状态、动作、权重)元组，其中状态-动作对的权重是它所属轨迹（trajectory，episode，or rollout）的返回值。(尽管我们将在后面的小节中展示，您可以为权重插入其他值，这些值也可以正常工作。)</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<blockquote>
+<div><p>尽管我们将其描述为损失函数，但它并**不**是监督学习中典型意义上的损失函数。它与标准损失函数有两个主要区别。</p>
+<p><strong>1. 数据分布取决于参数。</strong> 损失函数通常定义在一个与我们要优化的参数无关的固定数据分布上。这里的情况并非如此，数据必须取自最近的策略。</p>
+<p><strong>2. 它并不衡量性能。</strong> 损失函数通常评估我们关心的性能指标。这里，我们关心的是预期收益, <span class="math">\(J(\pi_{\theta})\)</span>, 但是我们的“损失”函数根本不接近这个预期收益，即使是它的期望也不接近。这个“损失”函数只对我们有用，因为当对当前参数进行评估时，使用当前参数生成的数据，它具有负的性能梯度。</p>
+<p>但在第一步梯度下降之后，与性能就没有任何联系了。这意味着最小化这个“损失”函数，对于给定的一批数据，并不能保证提高预期回报。你可以把这笔损失减小到 <span class="math">\(-\infty\)</span> 同时策略的性能非常差；事实上，它通常是这样的。有时，深度强化学习研究人员可能会将这种结果描述为策略对一批数据的“过拟合”。这是未来方便理解，但不同于监督学习的“过拟合”，因为这里不涉及泛化误差。</p>
+</div></blockquote>
+<p class="last">我们之所以提出这一点，是因为机器学习从业者通常会在训练期间将损失函数解释为有用的信号——“如果损失下降，一切都很好。”在策略梯度中，这种直觉是错误的，你应该只关心平均收益。损失函数没有任何意义。</p>
+</div>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p>这里使用的这个方法调用 <code class="docutils literal"><span class="pre">log_prob</span></code> PyTorch 中``Categorical`` 对象的 <code class="docutils literal"><span class="pre">log_prob</span></code> 方法创建一个 <code class="docutils literal"><span class="pre">logp</span></code> 张量。如果要使用其他分布可能需要一些修改。</p>
+<p>例如，如果你正在使用正态分布（对角高斯策略），调用 <code class="docutils literal"><span class="pre">policy.log_prob(act)</span></code> 的输出将为您提供一个张量，其中包含每个向量值动作的每个元素的单独的对数概率。也就是说，当你需要的是一个形状为(batch，)张量创建强化学习的损失的时候，你输入一个形状为``(batch, act_dim)``的张量，得到一个形状``(batch, act_dim``的张量。在这种情况下，你将动作元素的对数概率相加，得到动作的对数概率。也就是说，你讲计算:</p>
+<p class="last">logp = get_policy(obs).log_prob(act).sum(axis=-1)</p>
+</div>
+<p><strong>3. 运行训练的一代（epoch）。</strong></p>
+<div class="highlight-python"><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><span class="c1"># 训练策略</span>
+<span class="k">def</span> <span class="nf">train_one_epoch</span><span class="p">():</span>
+    <span class="c1"># 创建一些空的列表用于存储日志</span>
+    <span class="n">batch_obs</span> <span class="o">=</span> <span class="p">[]</span>          <span class="c1"># 观测</span>
+    <span class="n">batch_acts</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># 动作</span>
+    <span class="n">batch_weights</span> <span class="o">=</span> <span class="p">[]</span>      <span class="c1"># 策略梯度中 R(tau) 的权重</span>
+    <span class="n">batch_rets</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># 测量轨迹的回报值</span>
+    <span class="n">batch_lens</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># 测量轨迹的长度</span>
+
+    <span class="c1"># 重设与轨迹相关的变量</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>       <span class="c1"># 来自于起始分布的第一个观测</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>            <span class="c1"># 环境中轨迹结束的信号</span>
+    <span class="n">ep_rews</span> <span class="o">=</span> <span class="p">[]</span>            <span class="c1"># 整个轨迹累计的奖励的列表</span>
+
+    <span class="c1"># 渲染每代的第一个轨迹</span>
+    <span class="n">finished_rendering_this_epoch</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># 通过在当前测量的环境中动作来收集经历</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+
+        <span class="c1"># 渲染</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">finished_rendering_this_epoch</span><span class="p">)</span> <span class="ow">and</span> <span class="n">render</span><span class="p">:</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+        <span class="c1"># 保存观测值</span>
+        <span class="n">batch_obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+        <span class="c1"># 在环境中执行动作（状态转移）</span>
+        <span class="n">act</span> <span class="o">=</span> <span class="n">get_action</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">rew</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">act</span><span class="p">)</span>
+
+        <span class="c1"># 保存动作和奖励</span>
+        <span class="n">batch_acts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">act</span><span class="p">)</span>
+        <span class="n">ep_rews</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rew</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+            <span class="c1"># 如果轨迹结果的话，记录和轨迹相关的一些信息</span>
+            <span class="n">ep_ret</span><span class="p">,</span> <span class="n">ep_len</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ep_rews</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ep_rews</span><span class="p">)</span>
+            <span class="n">batch_rets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ep_ret</span><span class="p">)</span>
+            <span class="n">batch_lens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ep_len</span><span class="p">)</span>
+
+            <span class="c1"># 每个logprob(a|s) 的权重是 R(tau)</span>
+            <span class="n">batch_weights</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ep_ret</span><span class="p">]</span> <span class="o">*</span> <span class="n">ep_len</span>
+
+            <span class="c1"># 重设与轨迹相关的变量</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">ep_rews</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(),</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[]</span>
+
+            <span class="c1"># 这个代不会再渲染了</span>
+            <span class="n">finished_rendering_this_epoch</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># 结束循环，如果我们有足够的经历</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_obs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">batch_size</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="c1"># 执行一步测量更新的步骤</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">batch_loss</span> <span class="o">=</span> <span class="n">compute_loss</span><span class="p">(</span><span class="n">obs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">batch_obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                              <span class="n">act</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">batch_acts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                              <span class="n">weights</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">batch_weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                              <span class="p">)</span>
+    <span class="n">batch_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">batch_loss</span><span class="p">,</span> <span class="n">batch_rets</span><span class="p">,</span> <span class="n">batch_lens</span>
+</pre></div></td></tr></table></div>
+</div>
+<p><code class="docutils literal"><span class="pre">train_one_epoch()</span></code> 函数运行策略梯度的一个“代”, 我们的定义是</p>
+<ol class="arabic simple">
+<li>经验收集步骤 (67-102行), 智能体在环境中使用最近的策略执行一定数量的轨迹，然后是</li>
+<li>单次策略梯度更新的步骤 (99-105行).</li>
+</ol>
+<p>算法的主循环只是重复调用 <code class="docutils literal"><span class="pre">train_one_epoch()</span></code>.</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">如果您还不熟悉PyTorch中的优化，请观察执行一个梯度下降步骤的模式，如第104-111行所示。首先，清除梯度缓存。然后，计算损失函数。然后，计算损失函数的反向传递;这会将新的梯度累积到梯度缓冲区中。最后，使用优化器执行一步。</p>
+</div>
+</div>
+<div class="section" id="expected-grad-log-prob-lemma">
+<h2><a class="toc-backref" href="#toc-entry-4">概率的对数的梯度的期望的引理（Expected Grad-Log-Prob Lemma）</a><a class="headerlink" href="#expected-grad-log-prob-lemma" title="Permalink to this headline">¶</a></h2>
+<p>在本节中，我们将推导出一个中间结果，它在整个策略梯度理论中被广泛使用。我们把它叫做 Expected Grad-Log-Prob (EGLP) 引理. <a class="footnote-reference" href="#footnote-1" id="footnote-reference-1">[1]</a></p>
+<p><strong>EGLP Lemma.</strong> 假设 <span class="math">\(P_{\theta}\)</span> 是一个随机变量 <span class="math">\(x\)</span> 的参数化概率分布。 则:</p>
+<div class="math">
+\[\underE{x \sim P_{\theta}}{\nabla_{\theta} \log P_{\theta}(x)} = 0.\]</div>
+<div class="admonition- admonition">
+<p class="first admonition-title">证明</p>
+<p>回想一下，所有的概率分布都是**标准化**的:</p>
+<div class="math">
+\[\int_x P_{\theta}(x) = 1.\]</div>
+<p>对归一化条件的等式两侧取梯度:</p>
+<div class="math">
+\[\nabla_{\theta} \int_x P_{\theta}(x) = \nabla_{\theta} 1 = 0.\]</div>
+<p>用对数导数的技巧得到:</p>
+<div class="last math">
+\[\begin{split}0 &amp;= \nabla_{\theta} \int_x P_{\theta}(x) \\
+&amp;= \int_x \nabla_{\theta} P_{\theta}(x) \\
+&amp;= \int_x P_{\theta}(x) \nabla_{\theta} \log P_{\theta}(x) \\
+\therefore 0 &amp;= \underE{x \sim P_{\theta}}{\nabla_{\theta} \log P_{\theta}(x)}.\end{split}\]</div>
+</div>
+<table class="docutils footnote" frame="void" id="footnote-1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#footnote-reference-1">[1]</a></td><td>本文的作者没有意识到这个引理在任何文献中都有一个标准的名称。但考虑到它出现的频率，为方便参考，给它起个名字似乎是很值得的。</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="section-2">
+<h2><a class="toc-backref" href="#toc-entry-5">不要让过去分散你的注意力</a><a class="headerlink" href="#section-2" title="Permalink to this headline">¶</a></h2>
+<p>检查我们最近的策略梯度的表达式:</p>
+<div class="math">
+\[\nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau)}.\]</div>
+<p>采用这种梯度走一步，每个动作的对数概率就会与 <span class="math">\(R(\tau)\)</span> 成比例增加，即 <em>所有获得的奖励总和</em>。但这没有多大意义。</p>
+<p>智能体确实应该只在“结果”的基础上强化动作。在采取动作之前获得的奖励与该行动有多好无关:只有“之后”才会获得奖励。</p>
+<p>这种直觉在数学中也有体现，我们可以证明策略梯度也可以用</p>
+<div class="math">
+\[\nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1})}.\]</div>
+<p>在这种形式中，行动只会基于采取动作后获得的奖励而得到强化。</p>
+<p>我们称这种形式为 “reward-to-go policy gradient,” 因为是轨迹上某一点之后的奖励总和，</p>
+<div class="math">
+\[\hat{R}_t \doteq \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1}),\]</div>
+<p>从这一点之后被称为**reward-to-go**,这个策略梯度表达式依赖于来自状态-行动对的奖励。</p>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last"><strong>But how is this better?</strong> A key problem with policy gradients is how many sample trajectories are needed to get a low-variance sample estimate for them. The formula we started with included terms for reinforcing actions proportional to past rewards, all of which had zero mean, but nonzero variance: as a result, they would just add noise to sample estimates of the policy gradient. By removing them, we reduce the number of sample trajectories needed.</p>
+</div>
+<p>An (optional) proof of this claim can be found <a class="reference external" href="../spinningup/extra_pg_proof1.html">here</a>, and it ultimately depends on the EGLP lemma.</p>
+</div>
+<div class="section" id="implementing-reward-to-go-policy-gradient">
+<h2><a class="toc-backref" href="#toc-entry-6">Implementing Reward-to-Go Policy Gradient</a><a class="headerlink" href="#implementing-reward-to-go-policy-gradient" title="Permalink to this headline">¶</a></h2>
+<p>We give a short Tensorflow implementation of the reward-to-go policy gradient in <code class="docutils literal"><span class="pre">spinup/examples/pg_math/2_rtg_pg.py</span></code>. (It can also be viewed <a class="reference external" href="https://github.com/openai/spinningup/blob/master/spinup/examples/pg_math/2_rtg_pg.py">on github</a>.)</p>
+<p>The only thing that has changed from <code class="docutils literal"><span class="pre">1_simple_pg.py</span></code> is that we now use different weights in the loss function. The code modification is very slight: we add a new function, and change two other lines. The new function is:</p>
+<div class="highlight-python"><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><span class="k">def</span> <span class="nf">reward_to_go</span><span class="p">(</span><span class="n">rews</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rews</span><span class="p">)</span>
+    <span class="n">rtgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rews</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)):</span>
+        <span class="n">rtgs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rews</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rtgs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rtgs</span>
+</pre></div></td></tr></table></div>
+</div>
+<p>And then we tweak the old L86-87 from:</p>
+<div class="highlight-python"><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">86</span>
+<span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span>                <span class="c1"># the weight for each logprob(a|s) is R(tau)</span>
+                <span class="n">batch_weights</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ep_ret</span><span class="p">]</span> <span class="o">*</span> <span class="n">ep_len</span>
+</pre></div></td></tr></table></div>
+</div>
+<p>to:</p>
+<div class="highlight-python"><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span>                <span class="c1"># the weight for each logprob(a_t|s_t) is reward-to-go from t</span>
+                <span class="n">batch_weights</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reward_to_go</span><span class="p">(</span><span class="n">ep_rews</span><span class="p">))</span>
+</pre></div></td></tr></table></div>
+</div>
+</div>
+<div class="section" id="baselines-in-policy-gradients">
+<h2><a class="toc-backref" href="#toc-entry-7">Baselines in Policy Gradients</a><a class="headerlink" href="#baselines-in-policy-gradients" title="Permalink to this headline">¶</a></h2>
+<p>An immediate consequence of the EGLP lemma is that for any function <span class="math">\(b\)</span> which only depends on state,</p>
+<div class="math">
+\[\underE{a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t|s_t) b(s_t)} = 0.\]</div>
+<p>This allows us to add or subtract any number of terms like this from our expression for the policy gradient, without changing it in expectation:</p>
+<div class="math">
+\[\nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \left(\sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1}) - b(s_t)\right)}.\]</div>
+<p>Any function <span class="math">\(b\)</span> used in this way is called a <strong>baseline</strong>.</p>
+<p>The most common choice of baseline is the <a class="reference external" href="../spinningup/rl_intro.html#value-functions">on-policy value function</a> <span class="math">\(V^{\pi}(s_t)\)</span>. Recall that this is the average return an agent gets if it starts in state <span class="math">\(s_t\)</span> and then acts according to policy <span class="math">\(\pi\)</span> for the rest of its life.</p>
+<p>Empirically, the choice <span class="math">\(b(s_t) = V^{\pi}(s_t)\)</span> has the desirable effect of reducing variance in the sample estimate for the policy gradient. This results in faster and more stable policy learning. It is also appealing from a conceptual angle: it encodes the intuition that if an agent gets what it expected, it should “feel” neutral about it.</p>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p>In practice, <span class="math">\(V^{\pi}(s_t)\)</span> cannot be computed exactly, so it has to be approximated. This is usually done with a neural network, <span class="math">\(V_{\phi}(s_t)\)</span>, which is updated concurrently with the policy (so that the value network always approximates the value function of the most recent policy).</p>
+<p>The simplest method for learning <span class="math">\(V_{\phi}\)</span>, used in most implementations of policy optimization algorithms (including VPG, TRPO, PPO, and A2C), is to minimize a mean-squared-error objective:</p>
+<div class="math">
+\[\phi_k = \arg \min_{\phi} \underE{s_t, \hat{R}_t \sim \pi_k}{\left( V_{\phi}(s_t) - \hat{R}_t \right)^2},\]</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p class="last">where <span class="math">\(\pi_k\)</span> is the policy at epoch <span class="math">\(k\)</span>. This is done with one or more steps of gradient descent, starting from the previous value parameters <span class="math">\(\phi_{k-1}\)</span>.</p>
+</div>
+</div>
+<div class="section" id="other-forms-of-the-policy-gradient">
+<h2><a class="toc-backref" href="#toc-entry-8">Other Forms of the Policy Gradient</a><a class="headerlink" href="#other-forms-of-the-policy-gradient" title="Permalink to this headline">¶</a></h2>
+<p>What we have seen so far is that the policy gradient has the general form</p>
+<div class="math">
+\[\nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Phi_t},\]</div>
+<p>where <span class="math">\(\Phi_t\)</span> could be any of</p>
+<div class="math">
+\[\Phi_t &amp;= R(\tau),\]</div>
+<p>or</p>
+<div class="math">
+\[\Phi_t &amp;= \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1}),\]</div>
+<p>or</p>
+<div class="math">
+\[\Phi_t &amp;= \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1}) - b(s_t).\]</div>
+<p>All of these choices lead to the same expected value for the policy gradient, despite having different variances. It turns out that there are two more valid choices of weights <span class="math">\(\Phi_t\)</span> which are important to know.</p>
+<p><strong>1. On-Policy Action-Value Function.</strong> The choice</p>
+<div class="math">
+\[\Phi_t = Q^{\pi_{\theta}}(s_t, a_t)\]</div>
+<p>is also valid. See <a class="reference external" href="../spinningup/extra_pg_proof2.html">this page</a> for an (optional) proof of this claim.</p>
+<p><strong>2. The Advantage Function.</strong> Recall that the <a class="reference external" href="../spinningup/rl_intro.html#advantage-functions">advantage of an action</a>, defined by <span class="math">\(A^{\pi}(s_t,a_t) = Q^{\pi}(s_t,a_t) - V^{\pi}(s_t)\)</span>,  describes how much better or worse it is than other actions on average (relative to the current policy). This choice,</p>
+<div class="math">
+\[\Phi_t = A^{\pi_{\theta}}(s_t, a_t)\]</div>
+<p>is also valid. The proof is that it’s equivalent to using <span class="math">\(\Phi_t = Q^{\pi_{\theta}}(s_t, a_t)\)</span> and then using a value function baseline, which we are always free to do.</p>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">The formulation of policy gradients with advantage functions is extremely common, and there are many different ways of estimating the advantage function used by different algorithms.</p>
+</div>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p>For a more detailed treatment of this topic, you should read the paper on <a class="reference external" href="https://arxiv.org/abs/1506.02438">Generalized Advantage Estimation</a> (GAE), which goes into depth about different choices of <span class="math">\(\Phi_t\)</span> in the background sections.</p>
+<p class="last">That paper then goes on to describe GAE, a method for approximating the advantage function in policy optimization algorithms which enjoys widespread use. For instance, Spinning Up’s implementations of VPG, TRPO, and PPO make use of it. As a result, we strongly advise you to study it.</p>
+</div>
+</div>
+<div class="section" id="recap">
+<h2><a class="toc-backref" href="#toc-entry-9">Recap</a><a class="headerlink" href="#recap" title="Permalink to this headline">¶</a></h2>
+<p>In this chapter, we described the basic theory of policy gradient methods and connected some of the early results to code examples. The interested student should continue from here by studying how the later results (value function baselines and the advantage formulation of policy gradients) translate into Spinning Up’s implementation of <a class="reference external" href="../algorithms/vpg.html">Vanilla Policy Gradient</a>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="spinningup.html" class="btn btn-neutral float-right" title="深度强化学习研究者的资料" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="rl_intro2.html" class="btn btn-neutral" title="第二部分：强化学习算法概述" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/es5/tex-chtml.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

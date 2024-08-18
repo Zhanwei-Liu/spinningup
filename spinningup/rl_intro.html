@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>第一部分：强化学习中的核心概念 &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="第二部分：强化学习算法概述" href="rl_intro2.html" />
+    <link rel="prev" title="绘制结果" href="../user/plotting.html" /> 
+ <script type="text/javascript">
+ 
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?7e494634f392b55baa85cfd2b508ae23";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+
+ 
+ </script> 
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">用户文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">项目介绍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">核心算法及其实现</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">运行试验</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">试验输出</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">绘制结果</a></li>
+</ul>
+<p class="caption"><span class="caption-text">强化学习介绍</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">第一部分：强化学习中的核心概念</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#section-2">强化学习能做什么</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#section-3">核心概念和术语</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#states-and-observations">状态和观察（States and Observations）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#action-spaces">动作空间（Action Spaces）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#policies">策略（Policies）</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#deterministic-policies">确定性策略（Deterministic Policies）</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stochastic-policies">随机性策略（Stochastic Policies）</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#trajectories">轨迹（Trajectories）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reward-and-return">奖励和回报 (Reward and Return)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-rl-problem">强化学习问题（The RL Problem）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#value-functions">值函数（Value Functions）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#q-the-optimal-q-function-and-the-optimal-action">最优 Q 函数和最优动作（The Optimal Q-Function and the Optimal Action）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bellman-equations">贝尔曼方程（Bellman Equations）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advantage-functions">优势函数（Advantage Functions）</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#section-4">数学模型（可选）</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">第二部分：强化学习算法概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro3.html">第三部分：策略优化介绍</a></li>
+</ul>
+<p class="caption"><span class="caption-text">资源</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinningup.html">深度强化学习研究者的资料</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">深度强化学习的核心论文</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises.html">练习</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Spinning Up 算法实现的基准</a></li>
+</ul>
+<p class="caption"><span class="caption-text">算法文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">工具文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">日志打印</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">绘图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI 工具</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">运行工具</a></li>
+</ul>
+<p class="caption"><span class="caption-text">其他</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">致谢</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/translator.html">关于译者</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>第一部分：强化学习中的核心概念</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/Zhanwei-Liu/spinningup/blob/master/docs/spinningup/rl_intro.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="section-1">
+<h1><a class="toc-backref" href="#toc-entry-1">第一部分：强化学习中的核心概念</a><a class="headerlink" href="#section-1" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="topic-1">
+<p class="topic-title">目录</p>
+<ul class="simple">
+<li><a class="reference internal" href="#section-1" id="toc-entry-1">第一部分：强化学习中的核心概念</a><ul>
+<li><a class="reference internal" href="#section-2" id="toc-entry-2">强化学习能做什么</a></li>
+<li><a class="reference internal" href="#section-3" id="toc-entry-3">核心概念和术语</a></li>
+<li><a class="reference internal" href="#section-4" id="toc-entry-4">数学模型（可选）</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>欢迎来到强化学习的介绍部分！我们希望你能了解以下内容：</p>
+<ul class="simple">
+<li>这部分讨论用到的数学符号表示</li>
+<li>关于强化学习算法做什么的一个深层解释（我们会尽量避免提及 <em>他们是如何做到的</em> 这个话题）</li>
+<li>以及算法背后的一些核心数学知识</li>
+</ul>
+<p>总的来说，强化学习是关于智能体（agents）以及它们如何通过试错来学习的研究。达成了这样一个共识：通过奖励或惩罚智能体（agents）的行为从而使它未来更容易重复或者放弃某一行为。</p>
+<div class="section" id="section-2">
+<h2><a class="toc-backref" href="#toc-entry-2">强化学习能做什么</a><a class="headerlink" href="#section-2" title="Permalink to this headline">¶</a></h2>
+<p>基于强化学习的方法已经在很多地方取得了成功。例如，它被用来教计算机在仿真环境下控制机器人：</p>
+<video autoplay="" src="https://storage.googleapis.com/joschu-public/knocked-over-stand-up.mp4" loop="" controls="" style="display: block; margin-left: auto; margin-right: auto; margin-bottom:1.5em; width: 100%; max-width: 720px; max-height: 80vh;">
+</video><p>以及在现实世界中控制机器：</p>
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+    <iframe src="https://www.youtube.com/embed/jwSbzNHGflM?ecver=1" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+</div>
+<br /><p>强化学习因为被用在复杂策略游戏创造出突破性的 AI 中而名声大噪，最著名的要数 <a class="reference external" href="https://deepmind.com/research/alphago/">围棋</a> 、 <a class="reference external" href="https://blog.openai.com/openai-five/">Dota</a> 、教计算机 <a class="reference external" href="https://deepmind.com/research/dqn/">玩Atari游戏</a> 以及训练模拟机器人 <a class="reference external" href="https://blog.openai.com/deep-reinforcement-learning-from-human-preferences/">听从人类的指令</a> 。</p>
+</div>
+<div class="section" id="section-3">
+<h2><a class="toc-backref" href="#toc-entry-3">核心概念和术语</a><a class="headerlink" href="#section-3" title="Permalink to this headline">¶</a></h2>
+<div class="figure align-center" id="figure-1">
+<img alt="../_images/rl_diagram_transparent_bg.png" src="../_images/rl_diagram_transparent_bg.png" />
+<p class="caption"><span class="caption-text">智能体和环境的循环交互</span></p>
+</div>
+<p>强化学习的主要特征是 <strong>智能体</strong> （agents）和 <a href="#system-message-1"><span class="problematic" id="problematic-1">**</span></a>环境**（environment），环境是智能体生存和互动的世界。在每一步的交互中，智能体都能得到一个这个世界的（有可能只是一部分）状态（state）的观察（observation），然后决定要采取的动作。环境会因为智能体对它的动作（actions）而改变，也可能自己改变。</p>
+<p>智能体也会从环境中感知到 <a href="#system-message-2"><span class="problematic" id="problematic-2">**</span></a>奖励**（reward） 信号，一个表明当前世界状态好坏的数字。智能体的目标是最大化它获得的累计奖励，也就是 <a href="#system-message-3"><span class="problematic" id="problematic-3">**</span></a>回报**（return）。强化学习方法就是智能体通过学习行为来完成目标的方式。</p>
+<p>为了更具体地讨论强化学习的作用，我们需要引入一些的术语：</p>
+<ul class="simple">
+<li>状态和观察(states and observations)</li>
+<li>动作空间(action spaces)</li>
+<li>策略(policies)</li>
+<li>轨迹(trajectories)</li>
+<li>不同的回报公式(different formulations of return)</li>
+<li>强化学习优化问题(the RL optimization problem)</li>
+<li>和值函数(value functions)</li>
+</ul>
+<div class="section" id="states-and-observations">
+<h3>状态和观察（States and Observations）<a class="headerlink" href="#states-and-observations" title="Permalink to this headline">¶</a></h3>
+<p>一个 <strong>状态</strong> <span class="math">\(s\)</span> 是一个关于这个世界状态的完整描述。这个世界所有的信息都包含在状态中。<strong>观察</strong> <span class="math">\(o\)</span> 是对于一个状态的部分描述，可能会漏掉一些信息。</p>
+<p>在深度强化学习中，我们一般用 <a class="reference external" href="https://en.wikipedia.org/wiki/Real_coordinate_space">实数向量、矩阵或者更高阶的张量（tensor）</a> 表示状态和观察。比如说，图像的 <strong>观察</strong> 可以用RGB矩阵的方式表示其像素值；机器人的 <strong>状态</strong> 可以通过关节角度和速度来表示。</p>
+<p>如果智能体观察到环境的全部状态，我们通常说环境是被 <strong>全面观察</strong> （fully observed）的。如果智能体只能观察到一部分状态，我们称之为 <strong>部分观察</strong> （partially observed）。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p>强化学习有时候用表示状态的符号 <span class="math">\(s\)</span> 放在一些适合使用符号 <span class="math">\(o\)</span> 的地方来表示观察.  尤其是，当智能体在决定采取什么动作的时候，符号上的表示按理说动作是基于当前状态的决定的，但实际上，因为智能体并不能知道状态所以动作是基于观察的。</p>
+<p class="last">在我们的教程中，我们会按照标准的方式使用这些符号，不过你一般能从上下文中看出来具体表示什么。如果你觉得有些内容不够清楚，请提出issue！我们的目的是教会大家，不是让大家混淆。</p>
+</div>
+</div>
+<div class="section" id="action-spaces">
+<h3>动作空间（Action Spaces）<a class="headerlink" href="#action-spaces" title="Permalink to this headline">¶</a></h3>
+<p>不同的环境允许不同的动作。所有有效动作的集合称之为 <strong>动作空间</strong>。有些环境，比如说 Atari 游戏和围棋，属于 <strong>离散动作空间</strong>，这种情况下智能体只能采取有限的动作。其他的一些环境，比如智能体在物理世界中控制机器人，属于 <strong>连续动作空间</strong>。在连续动作空间中，动作是实数向量。</p>
+<p>这种区别对于深度强化学习来说影响很大。有些算法只能直接用在某些某一种情况，如果需要想使用于另外的情况，可能就需要改进很多。</p>
+</div>
+<div class="section" id="policies">
+<h3>策略（Policies）<a class="headerlink" href="#policies" title="Permalink to this headline">¶</a></h3>
+<p><strong>策略</strong> 是智能体用于决定下一步执行什么行动的规则。可以是确定性的，一般表示为：<span class="math">\(\mu\)</span>:</p>
+<div class="math">
+\[a_t = \mu(s_t),\]</div>
+<p>也可以是随机的，一般表示为 <span class="math">\(\pi\)</span>:</p>
+<div class="math">
+\[a_t \sim \pi(\cdot | s_t).\]</div>
+<p>因为策略本质上就是智能体的大脑，所以很多时候“策略”和“智能体”这两个名词经常混用，例如我们会说：“策略的目的是最大化奖励”。</p>
+<p>在深度强化学习中，我们处理的是参数化的策略，这些策略的输出，依赖于一系列计算函数，而这些函数又依赖于参数（例如神经网络的权重和误差），所以我们可以通过一些优化算法改变智能体的的行为。</p>
+<p>我们经常把这些策略的参数计为 <span class="math">\(\theta\)</span> 或 <span class="math">\(\phi\)</span> ，然后把它写在策略的下标上来强调两者的联系。</p>
+<div class="math">
+\[\begin{split}a_t &amp;= \mu_{\theta}(s_t) \\
+a_t &amp;\sim \pi_{\theta}(\cdot | s_t).\end{split}\]</div>
+<div class="section" id="deterministic-policies">
+<h4>确定性策略（Deterministic Policies）<a class="headerlink" href="#deterministic-policies" title="Permalink to this headline">¶</a></h4>
+<p><strong>例子：确定性策略：</strong> 这是一个基于 PyTorch 使用 <cite>torch.nn</cite> 库在连续动作空间上构建一个确定性策略的简单例子：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">pi_net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">obs_dim</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">act_dim</span><span class="p">)</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>这里构建了一个多层感知器的网络，包含两个有大小为64的隐含层和`tanh`激活函数，如果`obs`是一个包含一批观测值的Numpy数组，<a href="#system-message-4"><span class="problematic" id="problematic-4">`</span></a>pi_net`能够使用来获得一批动作：</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">obs_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">actions</span> <span class="o">=</span> <span class="n">pi_net</span><span class="p">(</span><span class="n">obs_tensor</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">如果你对神经网络的内容不熟悉，也不要担心，本教程将侧重于强化学习，而不是神经网络方面的内容。因此，您可以跳过这个示例，稍后再回到它。但我们觉得如果你已经知道了，可能会有帮助。</p>
+</div>
+</div>
+<div class="section" id="stochastic-policies">
+<h4>随机性策略（Stochastic Policies）<a class="headerlink" href="#stochastic-policies" title="Permalink to this headline">¶</a></h4>
+<p>深度强化学习中最常见的两类随机策略是 <strong>分类策略</strong> (Categorical Policies) 和 <strong>对角高斯策略</strong> (Diagonal Gaussian Policies)。</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Categorical_distribution">分类</a> 策略适用于离散行动空间，而 <a class="reference external" href="https://en.wikipedia.org/wiki/Multivariate_normal_distribution">高斯</a> 策略一般用在连续行动空间。</p>
+<p>使用和训练随机策略的时候有两个重要的计算步骤是：</p>
+<ul class="simple">
+<li>从策略中采样行动</li>
+<li>计算给定行为的对数似然函数(log likelihoods) <span class="math">\(\log \pi_{\theta}(a|s)\)</span>.</li>
+</ul>
+<p>在接下来的内容中，我们将描述如何使用分类策略和对角高斯策略实现这两个计算步骤。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">分类策略</p>
+<p>分类策略就像是一个离散空间的分类器(classifier)。像建立一个分类器的神经网络一样建立一个分类策略的神经网络：输入是观察，接着是一些卷积、全连接层之类的，至于具体是哪些取决于输入的类型，最后一个线性层给出每个行动的 log 数值(logits)，后面跟一个 <a class="reference external" href="https://developers.google.com/machine-learning/crash-course/multi-class-neural-networks/softmax">softmax</a> 层把 log 数值转换为概率。</p>
+<p><strong>采样</strong> 已知每个行动的概率，PyTorch和Tensorflow之类的框架有内置函数可以进行采样。具体可查阅 <a href="#system-message-5"><span class="problematic" id="problematic-5">`Categorical distributions`_</span></a>, <a href="#system-message-6"><span class="problematic" id="problematic-6">`torch.multinomial`_</span></a>, <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/distributions/Categorical">tf.distributions.Categorical</a> , 或 <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/multinomial">tf.multinomial</a> 。</p>
+<p><strong>对数似然</strong> ：最后一层的概率定义为 <span class="math">\(P_{\theta}(s)\)</span>。它是一个和动作数量相同的向量，我们可以把动作当做索引。所以动作 <span class="math">\(a\)</span> 对数似然值可以通过这样得到：</p>
+<div class="last math">
+\[\log \pi_{\theta}(a|s) = \log \left[P_{\theta}(s)\right]_a.\]</div>
+</div>
+<div class="admonition- admonition">
+<p class="first admonition-title">对角高斯策略</p>
+<p>多元高斯分布（或者多元正态分布），可以用一个向量 <span class="math">\(\mu\)</span> 和协方差 <span class="math">\(\Sigma\)</span> 来描述。对角高斯分布就是协方差矩阵只有对角线上有值的特殊情况，所以我们可以用一个向量来表示它。</p>
+<p>对角高斯策略总会有一个神经网络，表示观察到行动的映射。其中有两种协方差矩阵的经典表示方式：</p>
+<p><strong>第一种</strong> ： 有一个单独的关于对数标准差的向量： <span class="math">\(\log \sigma\)</span>，它不是关于状态的函数，<span class="math">\(\log \sigma\)</span> 而是单独的参数（我们这个项目里，VPG, TRPO 和 PPO 都是用这种方式实现的）。</p>
+<p><strong>第二种</strong> ：有一个神经网络，从状态映射到对数标准差 <span class="math">\(\log \sigma_{\theta}(s)\)</span>。这种方式可能会和均值网络共享某些层的参数。</p>
+<p>要注意这两种情况下我们都没有直接计算标准差而是计算了对数标准差。这是因为对数标准差的定义域是 <span class="math">\((-\infty, \infty)\)</span> ，而标准差必须要求参数非负。约束条件越少，训练就越简单。而标准差可以通过对数标准差取幂得到，所以这种表示方法也不会丢失信息。</p>
+<p><strong>采样</strong> ：给定平均动作  <span class="math">\(\mu_{\theta}(s)\)</span> 和 标准差 <span class="math">\(\sigma_{\theta}(s)\)</span>，以及一个服从球形高斯分布的噪声向量 <span class="math">\(z\)</span>，动作的样本可以这样计算：</p>
+<div class="math">
+\[a = \mu_{\theta}(s) + \sigma_{\theta}(s) \odot z,\]</div>
+<p>这里 <span class="math">\(\odot\)</span> 表示两个向量的点积。标准框架都有内置函数生成噪音向量，例如  <a href="#system-message-7"><span class="problematic" id="problematic-7">`torch.normal`_</span></a> 和 <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/random_normal">tf.random_normal</a> 。你也可以直接内置分布例如 <a href="#system-message-8"><span class="problematic" id="problematic-8">`torch.distributions.Normal`_</span></a> 或者 <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/distributions/Normal">tf.distributions.Normal</a> 采样(后者的优势是哪些分布函数可以直接为你计算对数似然)。</p>
+<p><strong>对数似然</strong> 一个 k 维动作 <span class="math">\(a\)</span> 基于均值为 <span class="math">\(\mu = \mu_{\theta}(s)\)</span>，标准差为 <span class="math">\(\sigma = \sigma_{\theta}(s)\)</span> 的对角高斯的对数似然如下：</p>
+<div class="last math">
+\[\log \pi_{\theta}(a|s) = -\frac{1}{2}\left(\sum_{i=1}^k \left(\frac{(a_i - \mu_i)^2}{\sigma_i^2} + 2 \log \sigma_i \right) + k \log 2\pi \right).\]</div>
+</div>
+</div>
+</div>
+<div class="section" id="trajectories">
+<h3>轨迹（Trajectories）<a class="headerlink" href="#trajectories" title="Permalink to this headline">¶</a></h3>
+<p>轨迹 <span class="math">\(\tau\)</span> 指的是环境世界中的一系列的状态和动作。</p>
+<div class="math">
+\[\tau = (s_0, a_0, s_1, a_1, ...).\]</div>
+<p>第一个状态 <span class="math">\(s_0\)</span>，是从 <strong>开始状态分布</strong> 中随机采样的，计为 <span class="math">\(\rho_0\)</span> :</p>
+<div class="math">
+\[s_0 \sim \rho_0(\cdot).\]</div>
+<p>转态转换（从时间 <span class="math">\(t\)</span> 的状态 <span class="math">\(s_t\)</span> 到到时间 <span class="math">\(t+1\)</span> 的状态 <span class="math">\(s_{t+1}\)</span> 会发生什么），是由环境的自然规律确定的，并且只依赖于时间 <span class="math">\(t\)</span> 的动作 <span class="math">\(a_t\)</span>。它要么是确定性的：</p>
+<div class="math">
+\[s_{t+1} = f(s_t, a_t)\]</div>
+<p>要么是随机的（当有不确定disturbance输入系统时，时间 <span class="math">\(t+1\)</span> 的状态还取决于disturbance）：</p>
+<div class="math">
+\[s_{t+1} \sim P(\cdot|s_t, a_t).\]</div>
+<p>智能体的动作由策略确定。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">轨迹（<strong>trajectories</strong>）常常也被称作 <strong>episodes</strong> 或者 <strong>rollouts</strong>。</p>
+</div>
+</div>
+<div class="section" id="reward-and-return">
+<h3>奖励和回报 (Reward and Return)<a class="headerlink" href="#reward-and-return" title="Permalink to this headline">¶</a></h3>
+<p>在强化学习中，奖励函数 <span class="math">\(R\)</span> 非常重要。它由当前时间的状态、当前时间已经执行的动作和下一时间的状态共同决定。</p>
+<div class="math">
+\[r_t = R(s_t, a_t, s_{t+1})\]</div>
+<p>这个公式常被简化为只依赖当前时间的状态 <span class="math">\(r_t = R(s_t)\)</span>，或者依赖状态-动作对 <span class="math">\(r_t = R(s_t,a_t)\)</span>。</p>
+<p>智能体的目标是最大化轨迹的累计奖励，这意味着很多事情。我们会把所有的情况表示为 <span class="math">\(R(\tau)\)</span>，至于具体表示什么，要么可以很清楚的从上下文看出来，要么并不重要。（因为相同的方程式适用于所有情况。）</p>
+<p>一种奖励是 <strong>有限时域未折扣奖励</strong> （finite-horizon undiscounted return），它是在一个固定的步骤窗口内获得的奖励的总和：</p>
+<div class="math">
+\[R(\tau) = \sum_{t=0}^T r_t.\]</div>
+<p>另一种奖励叫做 <span class="math">\(\gamma\)</span> <strong>无限时域折扣奖励</strong> （infinite-horizon discounted return），指的是智能体获得的全部奖励之和，但是奖励根据未来获得的时间而逐渐折扣。这个公式包含折扣因子 <span class="math">\(\gamma \in (0,1)\)</span>:</p>
+<div class="math">
+\[R(\tau) = \sum_{t=0}^{\infty} \gamma^t r_t.\]</div>
+<p>这里为什么要加上一个折扣因子呢？为什么不直接把所有的奖励加在一起？确实如此，但折扣因子在直觉上很有吸引力，在数学上也很方便。可以从两个角度来解释： 直观上讲，现在的现金比未来的现金要好；从数学角度讲，无限多个奖励的和很可能 <a class="reference external" href="https://en.wikipedia.org/wiki/Convergent_series">不收敛</a> 到一个有限值，处理这样一个不收敛的等职是比较困难的。有了衰减因子和合理的约束条件，无限求和就会收敛。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">这两个公式从形式上看起来差距很大，事实上我们经常会混用。比如说，我们经常建立算法来优化未折扣的奖励，但在估计 <strong>值函数</strong> 时使用折扣因子。</p>
+</div>
+</div>
+<div class="section" id="the-rl-problem">
+<h3>强化学习问题（The RL Problem）<a class="headerlink" href="#the-rl-problem" title="Permalink to this headline">¶</a></h3>
+<p>无论选择哪种方式衡量收益（无论是无限时域折扣，还是有限时域未折扣），无论选择哪种策略，强化学习的目标都是选择一种策略，当代理根据这个策略行动的时候能最大化 <strong>期望奖励</strong> （expected return）。</p>
+<p>讨论期望收益之前，我们先讨论下轨迹的概率分布。</p>
+<p>我们假设环境转换和策略都是随机的。这种情况下， <span class="math">\(T\)</span> 步的轨迹是：</p>
+<div class="math">
+\[P(\tau|\pi) = \rho_0 (s_0) \prod_{t=0}^{T-1} P(s_{t+1} | s_t, a_t) \pi(a_t | s_t).\]</div>
+<p>期望收益计为 <span class="math">\(J(\pi)\)</span></p>
+<div class="math">
+\[J(\pi) = \int_{\tau} P(\tau|\pi) R(\tau) = \underE{\tau\sim \pi}{R(\tau)}.\]</div>
+<p>强化学习中的核心优化问题可以表示为：</p>
+<div class="math">
+\[\pi^* = \arg \max_{\pi} J(\pi),\]</div>
+<p><span class="math">\(\pi^*\)</span> 是 <strong>最优策略</strong> （optimal policy）。</p>
+</div>
+<div class="section" id="value-functions">
+<h3>值函数（Value Functions）<a class="headerlink" href="#value-functions" title="Permalink to this headline">¶</a></h3>
+<p>知道一个状态或者一对状态-行动(state-action pair)的 <strong>价值</strong> 很有用。这里的价值指的是，如果你从某一个状态或者状态-行动对开始，一直按照某个策略运行下去最终获得的期望回报。几乎所有的强化学习算法，都在用 <strong>值函数</strong> （Value funtion）。</p>
+<p>这里介绍四种主要函数：</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt><strong>on-policy值函数</strong> ： <span class="math">\(V^{\pi}(s)\)</span>，从某一个状态 <span class="math">\(s\)</span> 开始，之后每一步行动都按照策略 <span class="math">\(\pi\)</span> 执行</dt>
+<dd><div class="first last math">
+\[V^{\pi}(s) = \underE{\tau \sim \pi}{R(\tau)\left| s_0 = s\right.}\]</div>
+</dd>
+</dl>
+</li>
+<li><p class="first"><strong>on-policy动作-值函数</strong> ： <span class="math">\(Q^{\pi}(s,a)\)</span>,从某一个状态 <span class="math">\(s\)</span> 开始，先执行任意一个动作 <span class="math">\(a\)</span> （有可能不是按照策略得到的动作），之后每一步都按照策略 <span class="math">\(\pi\)</span> 执行：</p>
+<blockquote>
+<div><div class="math">
+\[Q^{\pi}(s,a) = \underE{\tau \sim \pi}{R(\tau)\left| s_0 = s, a_0 = a\right.}\]</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>最优值函数</strong>： <span class="math">\(V^*(s)\)</span>，从某一个状态 <span class="math">\(s\)</span> 开始，之后每一步都按照 <em>最优策略</em>  <span class="math">\(\pi\)</span> 执行</p>
+<blockquote>
+<div><div class="math">
+\[V^*(s) = \max_{\pi} \underE{\tau \sim \pi}{R(\tau)\left| s_0 = s\right.}\]</div>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>最优动作-值函数</strong> ： <span class="math">\(Q^*(s,a)\)</span> ，从某一个状态 <span class="math">\(s\)</span> 开始，先执行任意一个动作 <span class="math">\(a\)</span> （有可能不是按照策略走的），之后每一步都按照 <em>最优策略</em> 执行 <span class="math">\(\pi\)</span></p>
+<div class="math">
+\[Q^*(s,a) = \max_{\pi} \underE{\tau \sim \pi}{R(\tau)\left| s_0 = s, a_0 = a\right.}\]</div>
+</li>
+</ol>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">当我们讨论 <strong>值函数</strong> 的时候，如果我们没有提到时间依赖问题，那就意味着这是 <strong>无限时域折扣累计奖励</strong>。 <strong>有限时域无折扣奖励</strong> 需要传入时间作为参数，你知道为什么吗？ 提示：时间到了会发生什么？</p>
+</div>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p>值函数和动作-值函数两者之间有关键的联系：</p>
+<div class="math">
+\[V^{\pi}(s) = \underE{a\sim \pi}{Q^{\pi}(s,a)},\]</div>
+<p>以及：</p>
+<div class="math">
+\[V^*(s) = \max_a Q^* (s,a).\]</div>
+<p class="last">这些关系直接来自刚刚给出的定义，你能尝试证明吗？</p>
+</div>
+</div>
+<div class="section" id="q-the-optimal-q-function-and-the-optimal-action">
+<h3>最优 Q 函数和最优动作（The Optimal Q-Function and the Optimal Action）<a class="headerlink" href="#q-the-optimal-q-function-and-the-optimal-action" title="Permalink to this headline">¶</a></h3>
+<p>最优动作-值函数 <span class="math">\(Q^*(s,a)\)</span> 和被最优策略选中的动作有重要的联系。从定义上讲， <span class="math">\(Q^*(s,a)\)</span> 指的是从一个状态 <span class="math">\(s\)</span> 开始，任意执行一个动作 <span class="math">\(a\)</span> ，然后一直按照最优策略执行下去所获得的回报。</p>
+<p>最优策略 <span class="math">\(s\)</span> 会选择从状态 <span class="math">\(s\)</span> 开始能够最大化期望回报的动作。所以如果我们有了 <span class="math">\(Q^*\)</span> ，就可以通过下面的公式直接获得最优动作： <span class="math">\(a^*(s)\)</span> ：</p>
+<div class="math">
+\[a^*(s) = \arg \max_a Q^* (s,a).\]</div>
+<p>注意：可能会有多个动作能够最大化 <span class="math">\(Q^*(s,a)\)</span>，这种情况下，它们都是最优动作，最优策略可能会从中随机选择一个。但是总会存在一个最优策略每一步选择动作的时候是确定的。</p>
+</div>
+<div class="section" id="bellman-equations">
+<h3>贝尔曼方程（Bellman Equations）<a class="headerlink" href="#bellman-equations" title="Permalink to this headline">¶</a></h3>
+<p>全部四个值函数都遵守自一致性的方程叫做 <strong>贝尔曼方程</strong>，贝尔曼方程的基本思想是：</p>
+<blockquote>
+<div>起始点的值等于当前点的值和接下来到达的状态的值之和。</div></blockquote>
+<p>on-policy值函数的贝尔曼方程：</p>
+<div class="math">
+\begin{align*}
+V^{\pi}(s) &amp;= \underE{a \sim \pi \\ s'\sim P}{r(s,a) + \gamma V^{\pi}(s')}, \\
+Q^{\pi}(s,a) &amp;= \underE{s'\sim P}{r(s,a) + \gamma \underE{a'\sim \pi}{Q^{\pi}(s',a')}},
+\end{align*}</div><p><span class="math">\(s' \sim P\)</span> 是 <span class="math">\(s' \sim P(\cdot |s,a)\)</span> 的简写, 表明下一个时间的状态 <span class="math">\(s'\)</span> 是按照转换规则从环境中抽样得到的; <span class="math">\(a \sim \pi\)</span> 是 <span class="math">\(a \sim \pi(\cdot|s)\)</span> 的简写; and <span class="math">\(a' \sim \pi\)</span> 是 <span class="math">\(a' \sim \pi(\cdot|s')\)</span> 的简写.</p>
+<p>最优值函数的贝尔曼方程是：</p>
+<div class="math">
+\begin{align*}
+V^*(s) &amp;= \max_a \underE{s'\sim P}{r(s,a) + \gamma V^*(s')}, \\
+Q^*(s,a) &amp;= \underE{s'\sim P}{r(s,a) + \gamma \max_{a'} Q^*(s',a')}.
+\end{align*}</div><p>on-policy值函数和最优值函数的贝尔曼方程最大的区别是是否在动作中去 <span class="math">\(\max\)</span> 。这表明智能体在选择下一步动作时，为了做出最优动作，他必须选择能获得最大值的动作。</p>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">贝尔曼算子（Bellman backup）会在强化学习中经常出现。对于一个状态或一个状态-动作对，贝尔曼算子是贝尔曼方程的右边： 奖励加上一个值。</p>
+</div>
+</div>
+<div class="section" id="advantage-functions">
+<h3>优势函数（Advantage Functions）<a class="headerlink" href="#advantage-functions" title="Permalink to this headline">¶</a></h3>
+<p>强化学习中，有些时候我们不需要描述一个动作的绝对好坏，而只需要知道它相对于平均水平的优势。也就是说，我们只想知道一个行动的相对的 <strong>优势</strong> 。这就是优势函数（advantage function）的概念。</p>
+<p>一个策略 <span class="math">\(\pi\)</span> 的优势函数，描述的是它在状态 <span class="math">\(s\)</span> 下采取行为 <span class="math">\(a\)</span> 比随机选择一个动作好多少（假设之后一直按照策略 <span class="math">\(\pi\)</span> 选中动作）。从数学角度，优势函数的定义为：</p>
+<div class="math">
+\[A^{\pi}(s,a) = Q^{\pi}(s,a) - V^{\pi}(s).\]</div>
+<div class="admonition- admonition">
+<p class="first admonition-title">你应该知道</p>
+<p class="last">我们之后会继续谈论优势函数，它对于策略梯度方法非常重要。</p>
+</div>
+</div>
+</div>
+<div class="section" id="section-4">
+<h2><a class="toc-backref" href="#toc-entry-4">数学模型（可选）</a><a class="headerlink" href="#section-4" title="Permalink to this headline">¶</a></h2>
+<p>我们已经非正式地讨论了智能体的环境，但是如果你深入研究，可能会发现这样的标准数学形式：<strong>马尔科夫决策过程</strong> (Markov Decision Processes, MDPs)。MDP是一个5元组 <span class="math">\(\langle S, A, R, P, \rho_0 \rangle\)</span>，其中</p>
+<ul class="simple">
+<li><span class="math">\(S\)</span> 是所有有效状态的集合,</li>
+<li><span class="math">\(A\)</span> 是所有有效动作的集合,</li>
+<li><span class="math">\(R : S \times A \times S \to \mathbb{R}\)</span> 是奖励函数，其中 <span class="math">\(r_t = R(s_t, a_t, s_{t+1})\)</span>,</li>
+<li><span class="math">\(P : S \times A \to \mathcal{P}(S)\)</span> 是转态转移概率函数，其中 <span class="math">\(P(s'|s,a)\)</span> 是在状态  <span class="math">\(s\)</span> 下 采取动作 <span class="math">\(a\)</span> 转移到状态 <span class="math">\(s'\)</span> 的概率。</li>
+<li><span class="math">\(\rho_0\)</span> 是开始状态的分布。</li>
+</ul>
+<p>马尔科夫决策过程指的是服从 <a class="reference external" href="https://en.wikipedia.org/wiki/Markov_property">马尔科夫性</a> 的系统： 状态转移只依赖与最近的状态和行动，而不依赖之前的历史数据。</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="rl_intro2.html" class="btn btn-neutral float-right" title="第二部分：强化学习算法概述" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../user/plotting.html" class="btn btn-neutral" title="绘制结果" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/es5/tex-chtml.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

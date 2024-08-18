@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>核心算法及其实现 &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="运行试验" href="running.html" />
+    <link rel="prev" title="安装" href="installation.html" /> 
+ <script type="text/javascript">
+ 
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?7e494634f392b55baa85cfd2b508ae23";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+
+ 
+ </script> 
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">用户文档</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">项目介绍</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">安装</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">核心算法及其实现</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#section-2">包括哪些算法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#section-3">为什么介绍这些算法？</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#on-policy">同策略（On-Policy）算法</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#off-policy">异策略（Off-Policy）算法</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#section-4">代码格式</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#section-5">算法文件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#section-6">核心文件</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">运行试验</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saving_and_loading.html">试验输出</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">绘制结果</a></li>
+</ul>
+<p class="caption"><span class="caption-text">强化学习介绍</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro.html">第一部分：强化学习中的核心概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro2.html">第二部分：强化学习算法概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro3.html">第三部分：策略优化介绍</a></li>
+</ul>
+<p class="caption"><span class="caption-text">资源</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/spinningup.html">深度强化学习研究者的资料</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/keypapers.html">深度强化学习的核心论文</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/exercises.html">练习</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/bench.html">Spinning Up 算法实现的基准</a></li>
+</ul>
+<p class="caption"><span class="caption-text">算法文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">工具文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">日志打印</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">绘图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI 工具</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">运行工具</a></li>
+</ul>
+<p class="caption"><span class="caption-text">其他</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">致谢</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/translator.html">关于译者</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>核心算法及其实现</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/Zhanwei-Liu/spinningup/blob/master/docs/user/algorithms.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="section-1">
+<h1><a class="toc-backref" href="#toc-entry-1">核心算法及其实现</a><a class="headerlink" href="#section-1" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="topic-1">
+<p class="topic-title">目录</p>
+<ul class="simple">
+<li><a class="reference internal" href="#section-1" id="toc-entry-1">核心算法及其实现</a><ul>
+<li><a class="reference internal" href="#section-2" id="toc-entry-2">包括哪些算法</a></li>
+<li><a class="reference internal" href="#section-3" id="toc-entry-3">为什么介绍这些算法？</a><ul>
+<li><a class="reference internal" href="#on-policy" id="toc-entry-4">同策略（On-Policy）算法</a></li>
+<li><a class="reference internal" href="#off-policy" id="toc-entry-5">异策略（Off-Policy）算法</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#section-4" id="toc-entry-6">代码格式</a><ul>
+<li><a class="reference internal" href="#section-5" id="toc-entry-7">算法文件</a></li>
+<li><a class="reference internal" href="#section-6" id="toc-entry-8">核心文件</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="section-2">
+<h2><a class="toc-backref" href="#toc-entry-2">包括哪些算法</a><a class="headerlink" href="#section-2" title="Permalink to this headline">¶</a></h2>
+<p>下面的算法已经在 Spinning Up 中实现：</p>
+<ul class="simple">
+<li><a class="reference external" href="../algorithms/vpg.html">Vanilla Policy Gradient</a> (VPG)</li>
+<li><a class="reference external" href="../algorithms/trpo.html">Trust Region Policy Optimization</a> (TRPO)</li>
+<li><a class="reference external" href="../algorithms/ppo.html">Proximal Policy Optimization</a> (PPO)</li>
+<li><a class="reference external" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a> (DDPG)</li>
+<li><a class="reference external" href="../algorithms/td3.html">Twin Delayed DDPG</a> (TD3)</li>
+<li><a class="reference external" href="../algorithms/sac.html">Soft Actor-Critic</a> (SAC)</li>
+</ul>
+<p>这些算法全部以 <a class="reference external" href="https://en.wikipedia.org/wiki/Multilayer_perceptron">多层感知机</a> actor-critics 的方式实现，从而适用于全观察、不基于图像的强化学习环境，例如 <a class="reference external" href="https://gym.openai.com/envs/#mujoco">Gym Mujoco</a> 环境。</p>
+</div>
+<div class="section" id="section-3">
+<h2><a class="toc-backref" href="#toc-entry-3">为什么介绍这些算法？</a><a class="headerlink" href="#section-3" title="Permalink to this headline">¶</a></h2>
+<p>我们在这个项目中选取了能够呈现强化学习近些年发展历程的核心算法。目前，在 <strong>可靠性</strong> (stability)和 <strong>采样效率</strong> (sample efficiency)这两个因素上表现最优的策略学习算法是 PPO 和 SAC。从这些算法的设计和实际应用中，可以看出可靠性和采样效率两者的权衡。</p>
+<div class="section" id="on-policy">
+<h3><a class="toc-backref" href="#toc-entry-4">同策略（On-Policy）算法</a><a class="headerlink" href="#on-policy" title="Permalink to this headline">¶</a></h3>
+<p>Vanilla Policy Gradient(VPG) 是深度强化学习领域最基础也是入门级的算法，发表时间远早于深度强化学习。VPG 算法的核心思想可以追溯到上世纪 80 年代末、90年代初。在那之后，TRPO（2015）和 PPO(2017) 等更好的算法才相继诞生。</p>
+<p>上述系列工作都是基于不使用历史数据的同策略，因此在采样效率上表现相对较差。但这也是有原因的：它们直接优化我们关心的目标 —— 策略表现。这个系列的算法都是用采样效率换取可靠性，之后提出的算法，从 VPG 到TRPO 再到 PPO，都是在不断弥补采样效率方面的不足。</p>
+</div>
+<div class="section" id="off-policy">
+<h3><a class="toc-backref" href="#toc-entry-5">异策略（Off-Policy）算法</a><a class="headerlink" href="#off-policy" title="Permalink to this headline">¶</a></h3>
+<p>DDPG 是一个和 VPG 同样重要的算法，尽管它的提出时间较晚。确定策略梯度（Deterministic Policy Gradients，DPG）理论是在 2014 年提出的，是 DDPG 算法的基础。DDPG 算法和 Q-learning 算法很相似，都是同时学习 Q 函数和策略并通过更新相互提高。</p>
+<p>DDPG 和 Q-Learning 属于 <em>异策略</em> 算法，他们通过对贝尔曼方程（Bellman’s equations,也称动态规划方程）的优化，实现对历史数据的有效利用。</p>
+<p>但问题是，满足贝尔曼方程并不能保证一定有很好的策略性能。从经验上讲，满足贝尔曼方程可以有不错的性能、很好的采样效率,但也由于没有这种必然性的保证，这类算法没有那么稳定。基于 DDPG的后续工作 TD3 和 SAC 提出了很多新的方案来缓解这些问题。</p>
+</div>
+</div>
+<div class="section" id="section-4">
+<h2><a class="toc-backref" href="#toc-entry-6">代码格式</a><a class="headerlink" href="#section-4" title="Permalink to this headline">¶</a></h2>
+<p>Spinning Up 项目的算法都按照固定的模板来实现。每个算法由两个文件组成：</p>
+<ul class="simple">
+<li>算法文件，主要是算法的核心逻辑</li>
+<li>核心文件，包括各种运行算法所需的工具类。</li>
+</ul>
+<div class="section" id="section-5">
+<h3><a class="toc-backref" href="#toc-entry-7">算法文件</a><a class="headerlink" href="#section-5" title="Permalink to this headline">¶</a></h3>
+<p>算法文件最开始是经验存储类(experience buffer)的定义，作用是存储智能体和环境的互动信息。</p>
+<p>接下来有一个运行算法，以及以下算法：</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Logger 输出设定</li>
+<li>随机种子的设定</li>
+<li>环境实例化</li>
+<li>为计算图创建 placeholder</li>
+<li>通过 <em>actor-critic</em> 函数传递算法函数</li>
+<li>实例化经验缓存</li>
+<li>损失函数和一些其他的函数</li>
+<li>构建训练 ops</li>
+<li>构建 TF Session 并初始化参数</li>
+<li>通过 logger 保存模型</li>
+<li>定义运行算法主循环需要的函数（例如核心更新函数，获取行动函数，测试智能体函数等，取决于具体的算法）</li>
+<li>运行算法主循环<ol class="loweralpha">
+<li>让智能体在环境中开始运行</li>
+<li>根据算法的主要方程式，周期性更新参数</li>
+<li>打印核心性能数据并保存智能体</li>
+</ol>
+</li>
+</ol>
+</div></blockquote>
+<p>最后是从命令行读入设置的代码(ArgumentParser)。</p>
+</div>
+<div class="section" id="section-6">
+<h3><a class="toc-backref" href="#toc-entry-8">核心文件</a><a class="headerlink" href="#section-6" title="Permalink to this headline">¶</a></h3>
+<p>核心文件并没有像算法文件那样严格遵守模板，但也有一些相似的结构。</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>构建 placeholder 的函数</li>
+<li><em>actor-critic</em> 有关函数</li>
+<li>其他有用的函数</li>
+<li>与算法兼容的多层感知机 actor-critic 实现，策略和值函数(value function)都是通过简单的多层感知机来表示</li>
+</ol>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="running.html" class="btn btn-neutral float-right" title="运行试验" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="安装" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/es5/tex-chtml.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
